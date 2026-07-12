@@ -7,6 +7,7 @@ interface JourneyItem {
   title: string;
   subtitle: string;
   description: string;
+  link?: string; // <-- Added link property
 }
 
 const journeyData: JourneyItem[] = [
@@ -14,13 +15,15 @@ const journeyData: JourneyItem[] = [
     year: "June-July 2024",
     title: "Virtual Internship",
     subtitle: "Internship Studio",
-    description: "Engineered responsive, reusable frontend components and interactive user interfaces."
+    description: "Engineered responsive, reusable frontend components and interactive user interfaces.",
+    link: "https://drive.google.com/file/d/19PwbdMEuPRkT2Y8loJzpJpdgzq9i42QT/view?pli=1" // <-- Add your virtual internship certificate link here
   },
   {
     year: "2022 - 2026",
     title: "B.Tech Computer Science",
     subtitle: "GLA University, Mathura",
-    description: "Deep dive into advanced algorithms, database management, networking, and operating systems."
+    description: "Deep dive into advanced algorithms, database management, networking, and operating systems.",
+    link: "https://drive.google.com/file/d/1CocGtJ2hNNAclaIBtB2YT0uJrI02xvYI/view?usp=sharing" // <-- Add your B.Tech certificate/transcript link here
   }
 ];
 
@@ -55,9 +58,24 @@ export default function Timeline() {
                 <h4 className="text-[10px] md:text-xs font-mono tracking-[0.2em] text-zinc-500 uppercase mt-2 mb-4">
                   {item.subtitle}
                 </h4>
-                <p className="text-zinc-400 font-light text-sm leading-relaxed">
+                <p className="text-zinc-400 font-light text-sm leading-relaxed mb-4">
                   {item.description}
                 </p>
+                
+                {/* --- NEW VISIT BUTTON INSTALLED HERE --- */}
+                {item.link && (
+                  <div className={`flex ${isEven ? 'md:justify-end' : 'md:justify-start'}`}>
+                    <span
+                      href={item.link}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="inline-block text-[#00ff33] font-mono text-[10px] tracking-[0.2em] uppercase font-bold border border-[#00ff33]/50 px-4 py-1.5 hover:bg-[#00ff33] hover:text-black transition-colors duration-300 pointer-events-auto cursor-none"
+                    >
+                      View Certificate
+                    </span>
+                  </div>
+                )}
+                {/* ------------------------------------------- */}
               </div>
             </motion.div>
           );

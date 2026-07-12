@@ -352,7 +352,7 @@ export default function Home() {
                   
                   {project.link && (
                     <div className="mt-12 pointer-events-auto">
-                      <a
+                      <span
                         href={project.link}
                         target="_blank"
                         rel="noreferrer"
@@ -362,7 +362,7 @@ export default function Home() {
                           Visit Site
                         </span>
                         <span className="w-8 h-[2px] bg-[#00ff33] group-hover/link:w-full transition-all duration-300 shadow-[0_0_8px_rgba(0,255,51,0.8)]"></span>
-                      </a>
+                      </span>
                     </div>
                   )}
                 </div>
@@ -528,21 +528,21 @@ export default function Home() {
                 <div className="absolute bottom-0 right-0 w-2 h-2 border-b-2 border-r-2 border-[#00ff33]" />
 
                 <div className="flex flex-col sm:flex-row gap-4 mt-8 pointer-events-auto relative z-10">
-                  <a
+                  <span
                     href="https://drive.google.com/file/d/1BqYDD2k77h622F03X_ay9UWXnhDaU0XA/view"
                     target="_blank"
                     rel="noreferrer"
                     className="flex-1 text-center py-4 border border-[#00ff33] text-[#00ff33] hover:bg-[#00ff33] hover:text-black transition-all duration-300 font-bold tracking-[0.2em] text-[10px] uppercase cursor-none"
                   >
                     View Resume
-                  </a>
-                  <a
+                  </span>
+                  <span
                     href="https://drive.google.com/file/d/1BqYDD2k77h622F03X_ay9UWXnhDaU0XA/view"
                     download="Kush_Bhardwaj_Resume.pdf"
                     className="flex-1 text-center py-4 bg-[#00ff33] border border-[#00ff33] text-black hover:bg-white hover:border-white transition-all duration-300 font-bold tracking-[0.2em] text-[10px] uppercase cursor-none"
                   >
                     Extract PDF
-                  </a>
+                  </span>
                 </div>
               </motion.div>
 
@@ -594,14 +594,14 @@ export default function Home() {
                     </p>
                     
                     {item.link && (
-                      <a
+                      <span
                         href={item.link}
                         target="_blank"
                         rel="noreferrer"
                         className="mt-2 text-[#00ff33] font-mono text-[9px] tracking-[0.2em] uppercase font-bold border border-[#00ff33]/50 px-3 py-1 hover:bg-[#00ff33] hover:text-black transition-colors duration-300 pointer-events-auto cursor-none"
                       >
                         Visit
-                      </a>
+                      </span>
                     )}
                   </div>
                 ))}
