@@ -110,7 +110,8 @@ const Target = ({ id, text, initialPosition, onHit, onMiss }: TargetProps) => {
         color="#000000"
         anchorX="center"
         anchorY="middle"
-        toneMapped={false}
+        // Move toneMapped into the material prop
+        material={new THREE.MeshBasicMaterial({ toneMapped: false })}
       >
         {text}
       </Text>
