@@ -1,0 +1,47 @@
+@import "tailwindcss";
+
+:root {
+  --background: #0a0a0a;
+  --foreground: #ededed;
+  --neon-green: #00ff33;
+}
+
+@layer base {
+  body {
+    background-color: var(--background);
+    color: var(--foreground);
+    cursor: none;
+    user-select: none;
+  }
+
+  h1, h2, h3, h4, p, a, span {
+    user-select: text;
+  }
+
+  ::selection {
+    background: var(--neon-green);
+    color: #000000;
+  }
+}
+
+@layer utilities {
+  .custom-scrollbar::-webkit-scrollbar {
+    width: 18px;
+    background-color: var(--background);
+  }
+
+  .custom-scrollbar::-webkit-scrollbar-track {
+    background: var(--background);
+  }
+
+  .custom-scrollbar::-webkit-scrollbar-thumb {
+    background-color: var(--neon-green);
+    border: 2px solid var(--background);
+    min-height: 20px; 
+  }
+
+  .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+    background-color: #00cc29;
+    box-shadow: 0 0 10px var(--neon-green);
+  }
+}
