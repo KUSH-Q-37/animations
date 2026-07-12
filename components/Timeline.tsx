@@ -7,7 +7,7 @@ interface JourneyItem {
   title: string;
   subtitle: string;
   description: string;
-  link?: string; // <-- Added link property
+  link?: string;
 }
 
 const journeyData: JourneyItem[] = [
@@ -16,14 +16,14 @@ const journeyData: JourneyItem[] = [
     title: "Virtual Internship",
     subtitle: "Internship Studio",
     description: "Engineered responsive, reusable frontend components and interactive user interfaces.",
-    link: "https://drive.google.com/file/d/19PwbdMEuPRkT2Y8loJzpJpdgzq9i42QT/view?pli=1" // <-- Add your virtual internship certificate link here
+    link: "https://drive.google.com/file/d/19PwbdMEuPRkT2Y8loJzpJpdgzq9i42QT/view?pli=1" 
   },
   {
     year: "2022 - 2026",
     title: "B.Tech Computer Science",
     subtitle: "GLA University, Mathura",
     description: "Deep dive into advanced algorithms, database management, networking, and operating systems.",
-    link: "https://drive.google.com/file/d/1CocGtJ2hNNAclaIBtB2YT0uJrI02xvYI/view?usp=sharing" // <-- Add your B.Tech certificate/transcript link here
+    link: "https://drive.google.com/file/d/1CocGtJ2hNNAclaIBtB2YT0uJrI02xvYI/view?usp=sharing" 
   }
 ];
 
@@ -62,13 +62,11 @@ export default function Timeline() {
                   {item.description}
                 </p>
                 
-                {/* --- NEW VISIT BUTTON INSTALLED HERE --- */}
+                {/* --- FIXED SPAN ONCLICK --- */}
                 {item.link && (
                   <div className={`flex ${isEven ? 'md:justify-end' : 'md:justify-start'}`}>
                     <span
-                      href={item.link}
-                      target="_blank"
-                      rel="noreferrer"
+                      onClick={() => window.open(item.link, '_blank')}
                       className="inline-block text-[#00ff33] font-mono text-[10px] tracking-[0.2em] uppercase font-bold border border-[#00ff33]/50 px-4 py-1.5 hover:bg-[#00ff33] hover:text-black transition-colors duration-300 pointer-events-auto cursor-none"
                     >
                       View Certificate

@@ -203,14 +203,14 @@ const projects = [
   },
 ];
 
-const fadeUpVariant: any = { // <--- Added ': any' to skip strict type checking
+const fadeUpVariant: any = { // <--- Kept ': any' to skip strict type checking
   hidden: { opacity: 0, y: 40 },
   visible: {
     opacity: 1,
     y: 0,
     transition: { 
       duration: 0.8, 
-      ease: [0.16, 1, 0.3, 1] // This array is perfectly valid for animations
+      ease: [0.16, 1, 0.3, 1] 
     },
   },
 };
@@ -352,10 +352,9 @@ export default function Home() {
                   
                   {project.link && (
                     <div className="mt-12 pointer-events-auto">
+                      {/* FIX 1: Featured work visit button */}
                       <span
-                        href={project.link}
-                        target="_blank"
-                        rel="noreferrer"
+                        onClick={() => window.open(project.link, '_blank')}
                         className="group/link flex flex-col gap-2 cursor-none w-fit"
                       >
                         <span className="text-[#00ff33] font-mono text-sm tracking-[0.2em] uppercase font-bold drop-shadow-[0_0_8px_rgba(0,255,51,0.5)]">
@@ -482,7 +481,6 @@ export default function Home() {
               Credentials <span className="text-[#00ff33]">&</span> Resume
             </motion.h2>
 
-            {/* Changed to items-stretch so both columns match height dynamically */}
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-stretch">
               
               <motion.div
@@ -491,7 +489,6 @@ export default function Home() {
                 viewport={{ once: true, margin: "-100px" }}
                 variants={fadeUpVariant}
                 whileHover="hover"
-                // Removed min-h-[500px], added h-full to stretch to match the right column
                 className="lg:col-span-5 flex flex-col justify-between border border-zinc-800 bg-[#0a0a0a] p-6 md:p-8 hover:border-[#00ff33]/50 transition-colors duration-500 shadow-2xl relative h-full min-h-[350px] overflow-hidden"
               >
                 <motion.div
@@ -528,17 +525,16 @@ export default function Home() {
                 <div className="absolute bottom-0 right-0 w-2 h-2 border-b-2 border-r-2 border-[#00ff33]" />
 
                 <div className="flex flex-col sm:flex-row gap-4 mt-8 pointer-events-auto relative z-10">
+                  {/* FIX 2: Resume View Button */}
                   <span
-                    href="https://drive.google.com/file/d/1BqYDD2k77h622F03X_ay9UWXnhDaU0XA/view"
-                    target="_blank"
-                    rel="noreferrer"
+                    onClick={() => window.open("https://drive.google.com/file/d/1BqYDD2k77h622F03X_ay9UWXnhDaU0XA/view", '_blank')}
                     className="flex-1 text-center py-4 border border-[#00ff33] text-[#00ff33] hover:bg-[#00ff33] hover:text-black transition-all duration-300 font-bold tracking-[0.2em] text-[10px] uppercase cursor-none"
                   >
                     View Resume
                   </span>
+                  {/* FIX 3: Resume Download Button */}
                   <span
-                    href="https://drive.google.com/file/d/1BqYDD2k77h622F03X_ay9UWXnhDaU0XA/view"
-                    download="Kush_Bhardwaj_Resume.pdf"
+                    onClick={() => window.open("https://drive.google.com/file/d/1BqYDD2k77h622F03X_ay9UWXnhDaU0XA/view", '_blank')}
                     className="flex-1 text-center py-4 bg-[#00ff33] border border-[#00ff33] text-black hover:bg-white hover:border-white transition-all duration-300 font-bold tracking-[0.2em] text-[10px] uppercase cursor-none"
                   >
                     Extract PDF
@@ -551,39 +547,37 @@ export default function Home() {
                 whileInView="visible"
                 viewport={{ once: true, margin: "-100px" }}
                 variants={fadeUpVariant}
-                // Changed gap-6 to gap-3 to compact the list
                 className="lg:col-span-7 flex flex-col justify-between gap-3 h-full"
               >
                 {[
                   {
                     title: "Kaggle Python Coder Badge",
                     desc: "Successfully completed Python programming challenges on Kaggle.",
-                    link: "https://www.kaggle.com/certification/badges/kushbhardwaj72/30", // Add your Kaggle link here
+                    link: "https://www.kaggle.com/certification/badges/kushbhardwaj72/30", 
                   },
                   {
                     title: "British Airways Data Science Simulation",
                     desc: "Completed a virtual data science job simulation focused on business analytics via Forage.",
-                    link: "https://drive.google.com/file/d/1APIBcMIpBgxXuody56E1feS5AtwGK6Rk/view", // Add your Forage/Certificate link here
+                    link: "https://drive.google.com/file/d/1APIBcMIpBgxXuody56E1feS5AtwGK6Rk/view", 
                   },
                   {
                     title: "HackerRank Certified SQL Developer",
                     desc: "Demonstrated proficiency in SQL, including JOIN, GROUP BY, aggregate functions, and database querying.",
-                    link: "https://www.hackerrank.com/certificates/3d610aa45759", // Add your HackerRank link here
+                    link: "https://www.hackerrank.com/certificates/3d610aa45759",
                   },
                   {
                     title: "HackerRank Certified Python Developer",
                     desc: "Validated Python fundamentals, object-oriented programming (OOP), collections, and modular programming.",
-                    link: "https://www.hackerrank.com/certificates/f1ed70f77049", // Add your HackerRank link here
+                    link: "https://www.hackerrank.com/certificates/f1ed70f77049", 
                   },
                   {
                     title: "HackerRank Gold (5-Star) Python Badge",
                     desc: "Demonstrated advanced Python programming and problem-solving skills.",
-                    link: "https://www.hackerrank.com/profile/khush7217553287", // Add your HackerRank link here
+                    link: "https://www.hackerrank.com/profile/khush7217553287",
                   },
                 ].map((item, idx) => (
                   <div
                     key={idx}
-                    // Reduced top/bottom padding to py-1
                     className="group relative flex flex-col items-start justify-center border-l border-[#00ff33]/30 hover:border-[#00ff33] pl-6 py-1 transition-colors duration-300"
                   >
                     <h4 className="text-base md:text-lg font-bold text-zinc-200 group-hover:text-[#00ff33] transition-colors">
@@ -594,10 +588,9 @@ export default function Home() {
                     </p>
                     
                     {item.link && (
+                      /* FIX 4: Credentials Visit Button */
                       <span
-                        href={item.link}
-                        target="_blank"
-                        rel="noreferrer"
+                        onClick={() => window.open(item.link, '_blank')}
                         className="mt-2 text-[#00ff33] font-mono text-[9px] tracking-[0.2em] uppercase font-bold border border-[#00ff33]/50 px-3 py-1 hover:bg-[#00ff33] hover:text-black transition-colors duration-300 pointer-events-auto cursor-none"
                       >
                         Visit
@@ -610,7 +603,6 @@ export default function Home() {
             </div>
           </div>
         </section>
-        {/* --------------------------------------- */}
 
         <NeonDivider />
 
