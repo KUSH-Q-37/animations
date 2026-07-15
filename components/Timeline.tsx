@@ -45,7 +45,7 @@ export default function Timeline() {
               className="relative flex items-start md:items-center justify-between w-full"
             >
               <div 
-                className="absolute left-[19px] md:left-1/2 top-1 md:top-1/2 w-[18px] h-[18px] bg-black border-[1.5px] border-[#00ff33] rounded-full -translate-x-1/2 md:-translate-y-1/2 z-10 shadow-[0_0_10px_rgba(0,255,51,0.8),inset_0_0_4px_rgba(0,255,51,0.5)]" 
+                className="absolute left-4.75 md:left-1/2 top-1 md:top-1/2 w-4.5 h-4.5 bg-black border-[1.5px] border-[#00ff33] rounded-full -translate-x-1/2 md:-translate-y-1/2 z-10 ,inset_0_0_4px_rgba(0,255,51,0.5)]" 
               />
 
               <div className={`w-full pl-12 md:pl-0 md:w-[calc(50%-3rem)] ${isEven ? 'md:mr-auto md:text-right' : 'md:ml-auto md:text-left'}`}>

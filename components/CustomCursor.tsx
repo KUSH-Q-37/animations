@@ -56,11 +56,11 @@ export default function CustomCursor({ isGame = false, isDrag = false }: CustomC
     };
   }, [cursorX, cursorY]);
 
-  const size = isGame ? 32 : isDrag ? 20 : 16;
+  const size = isGame ? 32 : isDrag ? 15 : 12;
 
   return (
     <motion.div
-      className="fixed top-0 left-0 rounded-full pointer-events-none z-[9999] flex flex-col items-center justify-center"
+      className="fixed top-0 left-0 rounded-full pointer-events-none z-9999 flex flex-col items-center justify-center"
       style={{
         x: cursorXSpring,
         y: cursorYSpring,
