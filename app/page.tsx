@@ -8,6 +8,7 @@ import Timeline from "@/components/Timeline";
 import SkillCloud from "@/components/SkillCloud";
 import ContactForm from "@/components/ContactForm";
 
+
 import { Canvas, useFrame } from "@react-three/fiber";
 import * as THREE from "three";
 import { OrbitControls } from "@react-three/drei";
@@ -373,7 +374,7 @@ export default function Home() {
                         <img
                           src={project.image}
                           alt={project.shortName}
-                          className="absolute inset-0 w-full h-full object-cover z-0 grayscale group-hover:opacity-0 transition-opacity duration-500"
+                          className="absolute inset-0 w-full h-full object-contain z-0 grayscale group-hover:opacity-0 transition-opacity duration-500"
                         />
                         <video
                           src={project.video}
@@ -390,13 +391,13 @@ export default function Home() {
                             e.currentTarget.pause();
                             e.currentTarget.currentTime = 0;
                           }}
-                          className="absolute inset-0 w-full h-full object-cover opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-auto"
+                          className="absolute inset-0 w-full h-full object-contain opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-auto"
                         />
                       </>
                     ) : (
                       <img
                         src={project.image}
-                        className="absolute inset-0 w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-700"
+                        className="absolute inset-0 w-full h-full object-contain grayscale group-hover:grayscale-0 transition-all duration-700"
                       />
                     )}
                   </div>
@@ -511,10 +512,10 @@ export default function Home() {
                   variants={{ initial: { opacity: 1 }, hover: { opacity: 0 } }}
                   transition={{ duration: 0.4, ease: "easeInOut" }}
                 >
-                  <h3 className="text-2xl font-bold text-white uppercase tracking-wider mb-4">
+                  <h3 className="text-2xl font-bold text-white uppercase tracking-wider mb-4 select-none">
                     Curriculum Vitae
                   </h3>
-                  <p className="text-zinc-400 font-light text-sm leading-relaxed">
+                  <p className="text-zinc-400 font-light text-sm leading-relaxed select-none">
                     Access my comprehensive professional experience, technical
                     skills, and educational background. Available for direct
                     viewing or secure local extraction.
@@ -630,7 +631,7 @@ export default function Home() {
         <NeonDivider />
 
         <section className="relative min-h-screen bg-[#0a0a0a] overflow-hidden flex flex-col pt-32 px-8 md:px-16 z-10">
-          <div className="absolute top-70 -left-4 w-[500px] h-[400px] opacity-80 z-0">
+          <div className="absolute top-63 -left-4 w-[450px] h-[400px] opacity-80 z-0">
             <Canvas camera={{ position: [0, 0, 15], fov: 45 }}>
               <OrbitControls enableZoom={false} enablePan={false} />
               <WireframeGlobe setIsDrag={setIsDrag} />
@@ -680,7 +681,7 @@ export default function Home() {
                 whileInView="visible"
                 viewport={{ once: true }}
                 variants={fadeUpVariant}
-                className="flex justify-end gap-8 mt-12 w-full max-w-2xl"
+                className="flex justify-end gap-3 mt-5 w-full max-w-2xl"
               >
                 <a
                   href="https://github.com/KUSH-Q-37"
@@ -689,7 +690,7 @@ export default function Home() {
                   className="text-[#00ff33] hover:text-white transition-colors duration-300 cursor-none"
                   aria-label="GitHub"
                 >
-                  <FaGithub className="w-12 h-12 md:w-16 md:h-16" />
+                  <FaGithub className="w-12 h-12 md:w-8 md:h-8" />
                 </a>
 
                 <a
@@ -699,12 +700,13 @@ export default function Home() {
                   className="text-[#00ff33] hover:text-white transition-colors duration-300 cursor-none"
                   aria-label="LinkedIn"
                 >
-                  <FaLinkedin className="w-12 h-12 md:w-16 md:h-16" />
+                  <FaLinkedin className="w-12 h-12 md:w-8 md:h-8" />
                 </a>
               </motion.div>
             </div>
           </div>
         </section>
+        
       </main>
     </>
   );
