@@ -1,17 +1,20 @@
 "use client";
 
 import { useState, useEffect, useRef, useMemo } from "react";
+import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
 import { FaGithub, FaLinkedin } from "react-icons/fa";
+import { SiLeetcode } from "react-icons/si";
 import CustomCursor from "@/components/CustomCursor";
 import Timeline from "@/components/Timeline";
 import SkillCloud from "@/components/SkillCloud";
 import ContactForm from "@/components/ContactForm";
 
 
-import { Canvas, useFrame } from "@react-three/fiber";
+import { useFrame } from "@react-three/fiber";
 import * as THREE from "three";
 import { OrbitControls } from "@react-three/drei";
+import InViewCanvas from "@/components/InViewCanvas";
 
 const NeonDivider = () => (
   <div className="w-[90%] md:w-[93%] mx-auto h-[0.7px] bg-[#00ff33] relative z-30" />
@@ -20,6 +23,26 @@ const NeonDivider = () => (
 const Divider = () => (
   <div className="w-[90%] md:w-[100%] mx-auto h-[2px] bg-[#00ff33] relative z-30" />
 );
+
+// Plain drei <OrbitControls> forces touch-action:"none" on its canvas the
+// moment it connects, so a single-finger swipe over these decorative 3D
+// backgrounds rotates the shape instead of scrolling the page — on
+// touch devices that pins the whole page in place. Put touch-action back to
+// "pan-y" right after mount (a macrotask after drei's own connect effect)
+// so vertical swipes still scroll normally; horizontal drags still rotate.
+const ScrollFriendlyOrbitControls = () => {
+  const controlsRef = useRef<any>(null);
+
+  useEffect(() => {
+    const id = setTimeout(() => {
+      const el = controlsRef.current?.domElement as HTMLElement | undefined;
+      if (el) el.style.touchAction = "pan-y";
+    }, 0);
+    return () => clearTimeout(id);
+  }, []);
+
+  return <OrbitControls ref={controlsRef} enableZoom={false} enablePan={false} />;
+};
 
 const RotatingShape = ({
   position,
@@ -72,12 +95,12 @@ const GeometricBackground = ({
 }) => {
   return (
     <div className="absolute right-0 top-0 w-full md:w-[60%] h-full z-0 [filter:drop-shadow(0_0_15px_rgba(0,255,51,0.6))]">
-      <Canvas
+      <InViewCanvas
         camera={{ position: [0, 0, 8], fov: 50 }}
         dpr={[1, 1.5]}
         gl={{ antialias: false, powerPreference: "high-performance" }}
       >
-        <OrbitControls enableZoom={false} enablePan={false} />
+        <ScrollFriendlyOrbitControls />
         <RotatingShape
           position={[0, 0, 0]}
           scale={2.5}
@@ -85,7 +108,7 @@ const GeometricBackground = ({
           speed={0.15}
           setIsDrag={setIsDrag}
         />
-      </Canvas>
+      </InViewCanvas>
     </div>
   );
 };
@@ -171,17 +194,46 @@ const TerrainMesh = () => {
 const TerrainBackground = () => {
   return (
     <div className="absolute bottom-0 left-0 w-full h-[400px] pointer-events-none z-0 [filter:drop-shadow(0_0_5px_rgba(0,255,51,0.4))]">
-      <Canvas camera={{ position: [0, 0.5, 7], fov: 50 }}>
+      <InViewCanvas camera={{ position: [0, 0.5, 7], fov: 50 }}>
         <TerrainMesh />
-      </Canvas>
+      </InViewCanvas>
     </div>
   );
 };
 
-const projects = [
+const RESUME_URL =
+  "https://drive.google.com/file/d/1ZNXjFGc8EXoW4TIyyOe5CXUZVZaEgjkD/view";
+
+type Project = {
+  id: string;
+  year: string;
+  shortName: string;
+  role: string;
+  tech: string[];
+  description: string;
+  image: string;
+  link: string;
+  // Optional data-pipeline stages, shown as a small flow diagram — only
+  // set on projects where that's actually the interesting part.
+  pipeline?: string[];
+};
+
+const projects: Project[] = [
   {
     id: "1",
-    year: "2025-26",
+    year: "2026",
+    shortName: "PriceTrail",
+    role: "FULL-STACK DEVELOPER",
+    tech: ["TYPESCRIPT", "NESTJS", "NEXT.JS", "POSTGRESQL", "REDIS"],
+    description:
+      "A full-stack Flipkart price-tracking platform built as a 9-package TypeScript monorepo, with an automated daily scrape-embed-match pipeline, a partitioned time-series schema, and a multi-layer product matching engine using pgvector HNSW semantic search.",
+    image: "/images/pricetrail.jpg",
+    link: "https://pricetrail-tau.vercel.app",
+    pipeline: ["SCRAPE", "EMBED", "MATCH", "STORE"],
+  },
+  {
+    id: "2",
+    year: "2026",
     shortName: "MindTrack",
     role: "FULL-STACK DEVELOPER",
     tech: ["MERN STACK", "MACHINE LEARNING", "TAILWIND CSS"],
@@ -191,14 +243,13 @@ const projects = [
     link: "https://github.com/KUSH-Q-37/mindwell",
   },
   {
-    id: "2",
+    id: "3",
     year: "2026",
     shortName: "IPL 2022 Analysis",
     role: "DATA ANALYST",
     tech: ["PYTHON", "NUMPY", "PANDAS", "MATPLOTLIB", "SEABORN"],
     description:
       "Exploratory data analysis and complex data visualizations mapping team performance and match trends.",
-    video: "/videos/ipl.mp4",
     image: "/images/ipl.jpg",
     link: "https://github.com/KUSH-Q-37/Data-Science",
   },
@@ -267,6 +318,18 @@ export default function Home() {
     <>
       <CustomCursor isGame={isGame} isDrag={isDrag} />
 
+      <motion.div
+        initial={{ opacity: 0, y: -16 }}
+        animate={!isLoading ? { opacity: 1, y: 0 } : { opacity: 0, y: -16 }}
+        transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1], delay: 0.2 }}
+        className="fixed top-5 left-5 md:top-8 md:left-8 z-40 font-mono text-lg md:text-xl font-bold tracking-tight select-none pointer-events-none"
+      >
+        <span className="text-zinc-500">&lt;</span>
+        <span className="text-white">KUSH</span>
+        <span className="text-[#00ff33] drop-shadow-[0_0_8px_rgba(0,255,51,0.6)]">/DEV</span>
+        <span className="text-zinc-500">&gt;</span>
+      </motion.div>
+
       <AnimatePresence>
         {isLoading && (
           <motion.div
@@ -309,8 +372,17 @@ export default function Home() {
               variants={fadeUpVariant}
               className="mt-6 text-xl md:text-2xl text-zinc-400 max-w-2xl font-light pointer-events-auto"
             >
-              Full-Stack Developer & Software Engineering Student crafting
-              interactive, high-performance digital experiences.
+              Full-Stack Developer & 2026 CS Graduate crafting
+              interactive, high-performance digital experiences at VM One Technologies.
+            </motion.p>
+
+            <motion.p
+              variants={fadeUpVariant}
+              className="mt-4 text-sm md:text-base text-zinc-500 max-w-xl font-light pointer-events-auto"
+            >
+              Comfortable across the stack — React and Node on the front and back end,
+              PostgreSQL and Redis underneath — with a background in Python and
+              machine learning from earlier data science work.
             </motion.p>
           </motion.div>
         </section>
@@ -353,53 +425,30 @@ export default function Home() {
                   
                   {project.link && (
                     <div className="mt-12 pointer-events-auto">
-                      {/* FIX 1: Featured work visit button */}
-                      <span
-                        onClick={() => window.open(project.link, '_blank')}
+                      <a
+                        href={project.link}
+                        target="_blank"
+                        rel="noreferrer"
                         className="group/link flex flex-col gap-2 cursor-none w-fit"
                       >
                         <span className="text-[#00ff33] font-mono text-sm tracking-[0.2em] uppercase font-bold drop-shadow-[0_0_8px_rgba(0,255,51,0.5)]">
                           Visit Site
                         </span>
                         <span className="w-8 h-[2px] bg-[#00ff33] group-hover/link:w-full transition-all duration-300 shadow-[0_0_8px_rgba(0,255,51,0.8)]"></span>
-                      </span>
+                      </a>
                     </div>
                   )}
                 </div>
 
                 <div className="lg:col-span-6 pt-8 pb-0 lg:px-8 border-b lg:border-b-0 lg:border-r border-[#00ff33] flex items-center">
                   <div className="w-full aspect-video relative border border-zinc-800 bg-black overflow-hidden flex items-center justify-center group-hover:border-[#00ff33]/50 transition-colors duration-500 shadow-2xl">
-                    {project.video ? (
-                      <>
-                        <img
-                          src={project.image}
-                          alt={project.shortName}
-                          className="absolute inset-0 w-full h-full object-contain z-0 grayscale group-hover:opacity-0 transition-opacity duration-500"
-                        />
-                        <video
-                          src={project.video}
-                          loop
-                          muted
-                          playsInline
-                          onMouseEnter={(e) => {
-                            const playPromise = e.currentTarget.play();
-                            if (playPromise !== undefined) {
-                              playPromise.catch(() => {});
-                            }
-                          }}
-                          onMouseLeave={(e) => {
-                            e.currentTarget.pause();
-                            e.currentTarget.currentTime = 0;
-                          }}
-                          className="absolute inset-0 w-full h-full object-contain opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-auto"
-                        />
-                      </>
-                    ) : (
-                      <img
-                        src={project.image}
-                        className="absolute inset-0 w-full h-full object-contain grayscale group-hover:grayscale-0 transition-all duration-700"
-                      />
-                    )}
+                    <Image
+                      src={project.image}
+                      alt={project.shortName}
+                      fill
+                      sizes="(min-width: 1024px) 50vw, 100vw"
+                      className="object-contain grayscale group-hover:grayscale-0 transition-all duration-700"
+                    />
                   </div>
                 </div>
 
@@ -443,6 +492,28 @@ export default function Home() {
                       {project.description}
                     </p>
                   </div>
+
+                  {project.pipeline && (
+                    <div className="mt-6">
+                      <h4 className="text-zinc-500 text-[9px] font-mono tracking-[0.2em] uppercase mb-2">
+                        Pipeline
+                      </h4>
+                      <div className="flex flex-wrap items-center gap-x-1.5 gap-y-2">
+                        {project.pipeline.map((stage, i) => (
+                          <div key={stage} className="flex items-center gap-1.5">
+                            <span className="px-2.5 py-1 text-[9px] font-mono uppercase tracking-widest text-black bg-[#00ff33]">
+                              {stage}
+                            </span>
+                            {i < project.pipeline!.length - 1 && (
+                              <span className="text-[#00ff33] text-xs font-mono">
+                                →
+                              </span>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
                 </div>
               </motion.div>
             ))}
@@ -489,29 +560,9 @@ export default function Home() {
                 whileInView="visible"
                 viewport={{ once: true, margin: "-100px" }}
                 variants={fadeUpVariant}
-                whileHover="hover"
                 className="lg:col-span-5 flex flex-col justify-between border border-zinc-800 bg-[#0a0a0a] p-6 md:p-8 hover:border-[#00ff33]/50 transition-colors duration-500 shadow-2xl relative h-full min-h-[350px] overflow-hidden"
               >
-                <motion.div
-                  className="absolute inset-0 z-0"
-                  initial={{ opacity: 0 }}
-                  variants={{ hover: { opacity: 0.8 } }}
-                  transition={{ duration: 0.6, ease: "easeInOut" }}
-                >
-                  <img
-                    src="/images/pfp.jpg"
-                    alt="Background Portrait"
-                    className="w-full h-full object-cover grayscale"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-[#0a0a0a] via-[#0a0a0a]/80 to-transparent" />
-                </motion.div>
-
-                <motion.div
-                  className="relative z-10"
-                  initial={{ opacity: 1 }}
-                  variants={{ initial: { opacity: 1 }, hover: { opacity: 0 } }}
-                  transition={{ duration: 0.4, ease: "easeInOut" }}
-                >
+                <div className="relative z-10">
                   <h3 className="text-2xl font-bold text-white uppercase tracking-wider mb-4 select-none">
                     Curriculum Vitae
                   </h3>
@@ -520,26 +571,28 @@ export default function Home() {
                     skills, and educational background. Available for direct
                     viewing or secure local extraction.
                   </p>
-                </motion.div>
+                </div>
 
                 <div className="absolute top-0 left-0 w-2 h-2 border-t-2 border-l-2 border-[#00ff33]" />
                 <div className="absolute bottom-0 right-0 w-2 h-2 border-b-2 border-r-2 border-[#00ff33]" />
 
                 <div className="flex flex-col sm:flex-row gap-4 mt-8 pointer-events-auto relative z-10">
-                  {/* FIX 2: Resume View Button */}
-                  <span
-                    onClick={() => window.open("https://drive.google.com/file/d/1BqYDD2k77h622F03X_ay9UWXnhDaU0XA/view", '_blank')}
+                  <a
+                    href={RESUME_URL}
+                    target="_blank"
+                    rel="noreferrer"
                     className="flex-1 text-center py-4 border border-[#00ff33] text-[#00ff33] hover:bg-[#00ff33] hover:text-black transition-all duration-300 font-bold tracking-[0.2em] text-[10px] uppercase cursor-none"
                   >
                     View Resume
-                  </span>
-                  {/* FIX 3: Resume Download Button */}
-                  <span
-                    onClick={() => window.open("https://drive.google.com/file/d/1BqYDD2k77h622F03X_ay9UWXnhDaU0XA/view", '_blank')}
+                  </a>
+                  <a
+                    href={RESUME_URL}
+                    target="_blank"
+                    rel="noreferrer"
                     className="flex-1 text-center py-4 bg-[#00ff33] border border-[#00ff33] text-black hover:bg-white hover:border-white transition-all duration-300 font-bold tracking-[0.2em] text-[10px] uppercase cursor-none"
                   >
                     Extract PDF
-                  </span>
+                  </a>
                 </div>
               </motion.div>
 
@@ -589,13 +642,14 @@ export default function Home() {
                     </p>
                     
                     {item.link && (
-                      /* FIX 4: Credentials Visit Button */
-                      <span
-                        onClick={() => window.open(item.link, '_blank')}
+                      <a
+                        href={item.link}
+                        target="_blank"
+                        rel="noreferrer"
                         className="mt-2 text-[#00ff33] font-mono text-[9px] tracking-[0.2em] uppercase font-bold border border-[#00ff33]/50 px-3 py-1 hover:bg-[#00ff33] hover:text-black transition-colors duration-300 pointer-events-auto cursor-none"
                       >
                         Visit
-                      </span>
+                      </a>
                     )}
                   </div>
                 ))}
@@ -631,11 +685,11 @@ export default function Home() {
         <NeonDivider />
 
         <section className="relative min-h-screen bg-[#0a0a0a] overflow-hidden flex flex-col pt-32 px-8 md:px-16 z-10">
-          <div className="absolute top-63 -left-4 w-[450px] h-[400px] opacity-80 z-0">
-            <Canvas camera={{ position: [0, 0, 15], fov: 45 }}>
-              <OrbitControls enableZoom={false} enablePan={false} />
+          <div className="absolute top-24 md:top-63 -left-4 w-[280px] h-[260px] md:w-[450px] md:h-[400px] opacity-80 z-0">
+            <InViewCanvas camera={{ position: [0, 0, 15], fov: 45 }}>
+              <ScrollFriendlyOrbitControls />
               <WireframeGlobe setIsDrag={setIsDrag} />
-            </Canvas>
+            </InViewCanvas>
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 w-full max-w-[1600px] mx-auto z-20 relative pointer-events-none">
@@ -687,20 +741,30 @@ export default function Home() {
                   href="https://github.com/KUSH-Q-37"
                   target="_blank"
                   rel="noreferrer"
-                  className="text-[#00ff33] hover:text-white transition-colors duration-300 cursor-none"
+                  className="p-2 text-[#00ff33] hover:text-white transition-colors duration-300 cursor-none"
                   aria-label="GitHub"
                 >
-                  <FaGithub className="w-12 h-12 md:w-8 md:h-8" />
+                  <FaGithub className="w-7 h-7 md:w-5 md:h-5" />
                 </a>
 
                 <a
                   href="https://www.linkedin.com/in/kush-bhardwaj-73a65628b/"
                   target="_blank"
                   rel="noreferrer"
-                  className="text-[#00ff33] hover:text-white transition-colors duration-300 cursor-none"
+                  className="p-2 text-[#00ff33] hover:text-white transition-colors duration-300 cursor-none"
                   aria-label="LinkedIn"
                 >
-                  <FaLinkedin className="w-12 h-12 md:w-8 md:h-8" />
+                  <FaLinkedin className="w-7 h-7 md:w-5 md:h-5" />
+                </a>
+
+                <a
+                  href="https://leetcode.com/u/kush968/"
+                  target="_blank"
+                  rel="noreferrer"
+                  className="p-2 text-[#00ff33] hover:text-white transition-colors duration-300 cursor-none"
+                  aria-label="LeetCode"
+                >
+                  <SiLeetcode className="w-7 h-7 md:w-5 md:h-5" />
                 </a>
               </motion.div>
             </div>

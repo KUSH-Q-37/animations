@@ -8,22 +8,37 @@ interface JourneyItem {
   subtitle: string;
   description: string;
   link?: string;
+  linkLabel?: string;
 }
 
 const journeyData: JourneyItem[] = [
-  {
-    year: "June-July 2024",
-    title: "Virtual Internship",
-    subtitle: "Internship Studio",
-    description: "Engineered responsive, reusable frontend components and interactive user interfaces.",
-    link: "https://drive.google.com/file/d/19PwbdMEuPRkT2Y8loJzpJpdgzq9i42QT/view?pli=1" 
-  },
   {
     year: "2022 - 2026",
     title: "B.Tech Computer Science",
     subtitle: "GLA University, Mathura",
     description: "Deep dive into advanced algorithms, database management, networking, and operating systems.",
-    link: "https://drive.google.com/file/d/1CocGtJ2hNNAclaIBtB2YT0uJrI02xvYI/view?usp=sharing" 
+    link: "https://drive.google.com/file/d/1CocGtJ2hNNAclaIBtB2YT0uJrI02xvYI/view?usp=sharing"
+  },
+  {
+    year: "June-July 2024",
+    title: "Virtual Full Stack Developer Intern",
+    subtitle: "Internship Studio (Remote)",
+    description: "Developed the frontend of an e-commerce web application using HTML, CSS, JavaScript, and React.js, building responsive and reusable components.",
+    link: "https://drive.google.com/file/d/19PwbdMEuPRkT2Y8loJzpJpdgzq9i42QT/view?pli=1"
+  },
+  {
+    year: "2024 - 25",
+    title: "Full Stack Development Training",
+    subtitle: "IntegraMind, GLA University",
+    description: "Built a Flask-based task prioritization and project management web app, implementing backend logic and frontend integration for user task workflows.",
+    link: "https://github.com/KUSH-Q-37/Integramind",
+    linkLabel: "View Repository"
+  },
+  {
+    year: "July 2026 - Present",
+    title: "Web Developer Intern",
+    subtitle: "VM One Technologies, Noida (On-site)",
+    description: "Designing and maintaining the company's production website end to end — a ten-section React 19 + TypeScript experience with GSAP/Lenis scroll animation and custom Canvas/WebGL visuals.",
   }
 ];
 
@@ -62,15 +77,16 @@ export default function Timeline() {
                   {item.description}
                 </p>
                 
-                {/* --- FIXED SPAN ONCLICK --- */}
                 {item.link && (
                   <div className={`flex ${isEven ? 'md:justify-end' : 'md:justify-start'}`}>
-                    <span
-                      onClick={() => window.open(item.link, '_blank')}
+                    <a
+                      href={item.link}
+                      target="_blank"
+                      rel="noreferrer"
                       className="inline-block text-[#00ff33] font-mono text-[10px] tracking-[0.2em] uppercase font-bold border border-[#00ff33]/50 px-4 py-1.5 hover:bg-[#00ff33] hover:text-black transition-colors duration-300 pointer-events-auto cursor-none"
                     >
-                      View Certificate
-                    </span>
+                      {item.linkLabel ?? "View Certificate"}
+                    </a>
                   </div>
                 )}
                 {/* ------------------------------------------- */}

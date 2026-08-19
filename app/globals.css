@@ -22,6 +22,16 @@
     background: var(--neon-green);
     color: #000000;
   }
+
+  /* The custom cursor + `cursor: none` hide any sense of where a mouse is,
+     but keyboard users still need to see where focus is. :focus-visible
+     (not :focus) keeps this from flashing on every mouse click while still
+     lighting up clearly on Tab navigation. */
+  :focus-visible {
+    outline: 2px solid var(--neon-green);
+    outline-offset: 3px;
+    border-radius: 2px;
+  }
 }
 
 @layer utilities {
