@@ -17,11 +17,11 @@ import { OrbitControls } from "@react-three/drei";
 import InViewCanvas from "@/components/InViewCanvas";
 
 const NeonDivider = () => (
-  <div className="w-[90%] md:w-[93%] mx-auto h-[0.7px] bg-[#00ff33] relative z-30" />
+  <div className="w-[90%] mx-auto h-[0.7px] bg-[#00ff33] relative z-30" />
 );
 
 const Divider = () => (
-  <div className="w-[90%] md:w-[100%] mx-auto h-[2px] bg-[#00ff33] relative z-30" />
+  <div className="w-full h-[2px] bg-[#00ff33] relative z-30" />
 );
 
 // Plain drei <OrbitControls> forces touch-action:"none" on its canvas the
@@ -94,7 +94,7 @@ const GeometricBackground = ({
   setIsDrag: (val: boolean) => void;
 }) => {
   return (
-    <div className="absolute right-0 top-0 w-full md:w-[60%] h-full z-0 [filter:drop-shadow(0_0_15px_rgba(0,255,51,0.6))]">
+    <div className="absolute top-0 right-0 w-48 h-48 sm:w-60 sm:h-60 md:w-[60%] md:h-full z-0 [filter:drop-shadow(0_0_15px_rgba(0,255,51,0.6))]">
       <InViewCanvas
         camera={{ position: [0, 0, 8], fov: 50 }}
         dpr={[1, 1.5]}
@@ -193,7 +193,7 @@ const TerrainMesh = () => {
 
 const TerrainBackground = () => {
   return (
-    <div className="absolute bottom-0 left-0 w-full h-[400px] pointer-events-none z-0 [filter:drop-shadow(0_0_5px_rgba(0,255,51,0.4))]">
+    <div className="absolute bottom-0 left-0 w-full h-[400px] pointer-events-none z-0 [filter:drop-shadow(0_0_5px_rgba(0,255,51,0.4))] [mask-image:linear-gradient(to_bottom,black_0%,black_65%,transparent_100%)] [-webkit-mask-image:linear-gradient(to_bottom,black_0%,black_65%,transparent_100%)]">
       <InViewCanvas camera={{ position: [0, 0.5, 7], fov: 50 }}>
         <TerrainMesh />
       </InViewCanvas>
@@ -347,7 +347,7 @@ export default function Home() {
       </AnimatePresence>
 
       <main className="min-h-screen bg-background text-foreground selection:bg-[#00ff33] selection:text-black relative font-sans">
-        <section className="relative h-screen flex flex-col justify-center px-8 md:px-24">
+        <section className="relative h-auto md:h-screen flex flex-col justify-start md:justify-center pt-28 pb-16 md:pt-0 md:pb-0 px-8 md:px-24">
           <GeometricBackground setIsDrag={setIsDrag} />
 
           <motion.div
@@ -357,7 +357,7 @@ export default function Home() {
           >
             <motion.h1
               variants={fadeUpVariant}
-              className="text-6xl md:text-9xl tracking-tighter select-none pointer-events-auto w-fit flex flex-col items-start leading-[0.9]"
+              className="text-7xl sm:text-8xl md:text-9xl tracking-tighter select-none pointer-events-auto w-fit flex flex-col items-start leading-[0.9]"
             >
               <div className="text-white pl-4 md:pl-0 pb-4">
                 <span className="select-none">Kush</span>
@@ -370,7 +370,7 @@ export default function Home() {
 
             <motion.p
               variants={fadeUpVariant}
-              className="mt-6 text-xl md:text-2xl text-zinc-400 max-w-2xl font-light pointer-events-auto"
+              className="mt-6 pl-4 md:pl-0 text-xl md:text-2xl text-zinc-400 max-w-2xl font-light pointer-events-auto"
             >
               Full-Stack Developer & 2026 CS Graduate crafting
               interactive, high-performance digital experiences at VM One Technologies.
@@ -378,7 +378,7 @@ export default function Home() {
 
             <motion.p
               variants={fadeUpVariant}
-              className="mt-4 text-sm md:text-base text-zinc-500 max-w-xl font-light pointer-events-auto"
+              className="mt-4 pl-4 md:pl-0 text-sm md:text-base text-zinc-500 max-w-xl font-light pointer-events-auto"
             >
               Comfortable across the stack — React and Node on the front and back end,
               PostgreSQL and Redis underneath — with a background in Python and
@@ -684,8 +684,8 @@ export default function Home() {
 
         <NeonDivider />
 
-        <section className="relative min-h-screen bg-[#0a0a0a] overflow-hidden flex flex-col pt-32 px-8 md:px-16 z-10">
-          <div className="absolute top-24 md:top-63 -left-4 w-[280px] h-[260px] md:w-[450px] md:h-[400px] opacity-80 z-0">
+        <section className="relative md:min-h-screen bg-[#0a0a0a] overflow-hidden flex flex-col pt-32 pb-16 md:pb-0 px-8 md:px-16 z-10">
+          <div className="absolute top-28 right-0 md:top-63 md:right-auto md:-left-4 w-[190px] h-[180px] md:w-[450px] md:h-[400px] opacity-50 md:opacity-80 z-0">
             <InViewCanvas camera={{ position: [0, 0, 15], fov: 45 }}>
               <ScrollFriendlyOrbitControls />
               <WireframeGlobe setIsDrag={setIsDrag} />
