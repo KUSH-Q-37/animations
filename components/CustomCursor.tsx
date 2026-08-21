@@ -20,8 +20,24 @@ export default function CustomCursor({ isGame = false, isDrag = false }: CustomC
 
   const [isHovering, setIsHovering] = useState(false);
   const [isInside, setIsInside] = useState(true);
+  // Starts true so the cursor never flashes on screen for mobile visitors
+  // before the media query check below has a chance to run.
+  const [isTouchDevice, setIsTouchDevice] = useState(true);
 
   useEffect(() => {
+    // Devices without a fine (mouse/trackpad) pointer never get the custom
+    // cursor — there's no mouse position to track, and a stray dot stuck
+    // wherever the last tap landed just looks broken.
+    const mql = window.matchMedia('(hover: hover) and (pointer: fine)');
+    const updateIsTouchDevice = () => setIsTouchDevice(!mql.matches);
+    updateIsTouchDevice();
+    mql.addEventListener('change', updateIsTouchDevice);
+    return () => mql.removeEventListener('change', updateIsTouchDevice);
+  }, []);
+
+  useEffect(() => {
+    if (isTouchDevice) return;
+
     const updateMousePosition = (e: MouseEvent) => {
       cursorX.set(e.clientX);
       cursorY.set(e.clientY);
@@ -37,26 +53,44 @@ export default function CustomCursor({ isGame = false, isDrag = false }: CustomC
       if (target.tagName === 'A' || target.tagName === 'BUTTON') setIsHovering(false);
     };
 
-    const handleMouseLeave = () => setIsInside(false);
-    const handleMouseEnter = () => setIsInside(true);
+    // `document`'s mouseleave/mouseenter fire the instant the pointer
+    // crosses onto the scrollbar too — it's native browser chrome, not
+    // part of the document's own hit-testing box, even though it's still
+    // visually inside the window. That made the cursor vanish over the
+    // scrollbar. Checking the pointer's coordinates against the actual
+    // window bounds instead means it only hides when the pointer truly
+    // leaves the viewport, and stays visible over the scrollbar gutter.
+    const handleWindowMouseOut = (e: MouseEvent) => {
+      if (
+        e.clientY <= 0 ||
+        e.clientX <= 0 ||
+        e.clientX >= window.innerWidth ||
+        e.clientY >= window.innerHeight
+      ) {
+        setIsInside(false);
+      }
+    };
+    const handleWindowMouseOver = () => setIsInside(true);
 
     // Passive listeners prevent scroll blocking
     window.addEventListener('mousemove', updateMousePosition, { passive: true });
     window.addEventListener('mouseover', handleMouseOver, { passive: true });
     window.addEventListener('mouseout', handleMouseOut, { passive: true });
-    document.addEventListener('mouseleave', handleMouseLeave);
-    document.addEventListener('mouseenter', handleMouseEnter);
+    document.addEventListener('mouseout', handleWindowMouseOut);
+    document.addEventListener('mouseover', handleWindowMouseOver);
 
     return () => {
       window.removeEventListener('mousemove', updateMousePosition);
       window.removeEventListener('mouseover', handleMouseOver);
       window.removeEventListener('mouseout', handleMouseOut);
-      document.removeEventListener('mouseleave', handleMouseLeave);
-      document.removeEventListener('mouseenter', handleMouseEnter);
+      document.removeEventListener('mouseout', handleWindowMouseOut);
+      document.removeEventListener('mouseover', handleWindowMouseOver);
     };
-  }, [cursorX, cursorY]);
+  }, [cursorX, cursorY, isTouchDevice]);
 
   const size = isGame ? 32 : isDrag ? 15 : 12;
+
+  if (isTouchDevice) return null;
 
   return (
     <motion.div

@@ -83,7 +83,7 @@ export default function Timeline() {
                       href={item.link}
                       target="_blank"
                       rel="noreferrer"
-                      className="inline-block text-[#00ff33] font-mono text-[10px] tracking-[0.2em] uppercase font-bold border border-[#00ff33]/50 px-4 py-1.5 hover:bg-[#00ff33] hover:text-black transition-colors duration-300 pointer-events-auto cursor-none"
+                      className="inline-block text-[#00ff33] font-mono text-[10px] tracking-[0.2em] uppercase font-bold border border-[#00ff33]/50 px-4 py-1.5 hover:bg-[#00ff33] hover:text-black active:bg-[#00ff33] active:text-black transition-colors duration-300 pointer-events-auto cursor-none"
                     >
                       {item.linkLabel ?? "View Certificate"}
                     </a>

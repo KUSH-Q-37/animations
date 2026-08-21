@@ -153,12 +153,24 @@ const WireframeGlobe = ({
 
 const TerrainMesh = () => {
   const meshRef = useRef<any>(null);
-  const geometry = useMemo(() => new THREE.PlaneGeometry(80, 40, 100, 50), []);
+  // Fewer segments = far fewer vertices to rewrite every update (61*31
+  // instead of 101*51) with no visible loss — the wave is slow and broad,
+  // and the mask-fade at the terrain's near edge hides the coarser mesh.
+  const geometry = useMemo(() => new THREE.PlaneGeometry(80, 40, 60, 30), []);
   const timeRef = useRef(0);
+  const frameRef = useRef(0);
 
   useFrame((_, delta) => {
     if (!meshRef.current) return;
     timeRef.current += delta;
+
+    // The vertex rewrite + GPU re-upload below is the priciest part of the
+    // whole page's per-frame cost. The wave moves slowly enough that
+    // updating it at ~30fps instead of ~60fps is invisible, but it halves
+    // that cost on every device.
+    frameRef.current++;
+    if (frameRef.current % 2 !== 0) return;
+
     const time = timeRef.current;
     const positions = meshRef.current.geometry.attributes.position;
 
@@ -194,7 +206,11 @@ const TerrainMesh = () => {
 const TerrainBackground = () => {
   return (
     <div className="absolute bottom-0 left-0 w-full h-[400px] pointer-events-none z-0 [filter:drop-shadow(0_0_5px_rgba(0,255,51,0.4))] [mask-image:linear-gradient(to_bottom,black_0%,black_65%,transparent_100%)] [-webkit-mask-image:linear-gradient(to_bottom,black_0%,black_65%,transparent_100%)]">
-      <InViewCanvas camera={{ position: [0, 0.5, 7], fov: 50 }}>
+      <InViewCanvas
+        camera={{ position: [0, 0.5, 7], fov: 50 }}
+        dpr={[1, 1.5]}
+        gl={{ antialias: false, powerPreference: "high-performance" }}
+      >
         <TerrainMesh />
       </InViewCanvas>
     </div>
@@ -281,6 +297,15 @@ export default function Home() {
     };
     window.addEventListener("mousedown", handleGlobalClick);
     return () => window.removeEventListener("mousedown", handleGlobalClick);
+  }, []);
+
+  useEffect(() => {
+    // iOS Safari only applies `:active` styles when a touchstart listener
+    // exists somewhere on the page — otherwise every `active:` utility
+    // below (the mobile stand-in for `hover:`) silently never fires.
+    const noop = () => {};
+    document.addEventListener("touchstart", noop, { passive: true });
+    return () => document.removeEventListener("touchstart", noop);
   }, []);
 
   useEffect(() => {
@@ -434,20 +459,20 @@ export default function Home() {
                         <span className="text-[#00ff33] font-mono text-sm tracking-[0.2em] uppercase font-bold drop-shadow-[0_0_8px_rgba(0,255,51,0.5)]">
                           Visit Site
                         </span>
-                        <span className="w-8 h-[2px] bg-[#00ff33] group-hover/link:w-full transition-all duration-300 shadow-[0_0_8px_rgba(0,255,51,0.8)]"></span>
+                        <span className="w-8 h-[2px] bg-[#00ff33] group-hover/link:w-full group-active/link:w-full transition-all duration-300 shadow-[0_0_8px_rgba(0,255,51,0.8)]"></span>
                       </a>
                     </div>
                   )}
                 </div>
 
                 <div className="lg:col-span-6 pt-8 pb-0 lg:px-8 border-b lg:border-b-0 lg:border-r border-[#00ff33] flex items-center">
-                  <div className="w-full aspect-video relative border border-zinc-800 bg-black overflow-hidden flex items-center justify-center group-hover:border-[#00ff33]/50 transition-colors duration-500 shadow-2xl">
+                  <div className="w-full aspect-video relative border border-zinc-800 bg-black overflow-hidden flex items-center justify-center group-hover:border-[#00ff33]/50 group-active:border-[#00ff33]/50 transition-colors duration-500 shadow-2xl">
                     <Image
                       src={project.image}
                       alt={project.shortName}
                       fill
                       sizes="(min-width: 1024px) 50vw, 100vw"
-                      className="object-contain grayscale group-hover:grayscale-0 transition-all duration-700"
+                      className="object-contain grayscale group-hover:grayscale-0 group-active:grayscale-0 transition-all duration-700"
                     />
                   </div>
                 </div>
@@ -560,7 +585,7 @@ export default function Home() {
                 whileInView="visible"
                 viewport={{ once: true, margin: "-100px" }}
                 variants={fadeUpVariant}
-                className="lg:col-span-5 flex flex-col justify-between border border-zinc-800 bg-[#0a0a0a] p-6 md:p-8 hover:border-[#00ff33]/50 transition-colors duration-500 shadow-2xl relative h-full min-h-[350px] overflow-hidden"
+                className="lg:col-span-5 flex flex-col justify-between border border-zinc-800 bg-[#0a0a0a] p-6 md:p-8 hover:border-[#00ff33]/50 active:border-[#00ff33]/50 transition-colors duration-500 shadow-2xl relative h-full min-h-[350px] overflow-hidden"
               >
                 <div className="relative z-10">
                   <h3 className="text-2xl font-bold text-white uppercase tracking-wider mb-4 select-none">
@@ -581,7 +606,7 @@ export default function Home() {
                     href={RESUME_URL}
                     target="_blank"
                     rel="noreferrer"
-                    className="flex-1 text-center py-4 border border-[#00ff33] text-[#00ff33] hover:bg-[#00ff33] hover:text-black transition-all duration-300 font-bold tracking-[0.2em] text-[10px] uppercase cursor-none"
+                    className="flex-1 text-center py-4 border border-[#00ff33] text-[#00ff33] hover:bg-[#00ff33] hover:text-black active:bg-[#00ff33] active:text-black transition-all duration-300 font-bold tracking-[0.2em] text-[10px] uppercase cursor-none"
                   >
                     View Resume
                   </a>
@@ -589,7 +614,7 @@ export default function Home() {
                     href={RESUME_URL}
                     target="_blank"
                     rel="noreferrer"
-                    className="flex-1 text-center py-4 bg-[#00ff33] border border-[#00ff33] text-black hover:bg-white hover:border-white transition-all duration-300 font-bold tracking-[0.2em] text-[10px] uppercase cursor-none"
+                    className="flex-1 text-center py-4 bg-[#00ff33] border border-[#00ff33] text-black hover:bg-white hover:border-white active:bg-white active:border-white transition-all duration-300 font-bold tracking-[0.2em] text-[10px] uppercase cursor-none"
                   >
                     Extract PDF
                   </a>
@@ -632,9 +657,9 @@ export default function Home() {
                 ].map((item, idx) => (
                   <div
                     key={idx}
-                    className="group relative flex flex-col items-start justify-center border-l border-[#00ff33]/30 hover:border-[#00ff33] pl-6 py-1 transition-colors duration-300"
+                    className="group relative flex flex-col items-start justify-center border-l border-[#00ff33]/30 hover:border-[#00ff33] active:border-[#00ff33] pl-6 py-1 transition-colors duration-300"
                   >
-                    <h4 className="text-base md:text-lg font-bold text-zinc-200 group-hover:text-[#00ff33] transition-colors">
+                    <h4 className="text-base md:text-lg font-bold text-zinc-200 group-hover:text-[#00ff33] group-active:text-[#00ff33] transition-colors">
                       {item.title}
                     </h4>
                     <p className="text-[10px] font-mono text-zinc-500 mt-1 tracking-wide leading-relaxed uppercase">
@@ -646,7 +671,7 @@ export default function Home() {
                         href={item.link}
                         target="_blank"
                         rel="noreferrer"
-                        className="mt-2 text-[#00ff33] font-mono text-[9px] tracking-[0.2em] uppercase font-bold border border-[#00ff33]/50 px-3 py-1 hover:bg-[#00ff33] hover:text-black transition-colors duration-300 pointer-events-auto cursor-none"
+                        className="mt-2 text-[#00ff33] font-mono text-[9px] tracking-[0.2em] uppercase font-bold border border-[#00ff33]/50 px-3 py-1 hover:bg-[#00ff33] hover:text-black active:bg-[#00ff33] active:text-black transition-colors duration-300 pointer-events-auto cursor-none"
                       >
                         Visit
                       </a>
@@ -684,9 +709,13 @@ export default function Home() {
 
         <NeonDivider />
 
-        <section className="relative md:min-h-screen bg-[#0a0a0a] overflow-hidden flex flex-col pt-32 pb-16 md:pb-0 px-8 md:px-16 z-10">
-          <div className="absolute top-28 right-0 md:top-63 md:right-auto md:-left-4 w-[190px] h-[180px] md:w-[450px] md:h-[400px] opacity-50 md:opacity-80 z-0">
-            <InViewCanvas camera={{ position: [0, 0, 15], fov: 45 }}>
+        <section className="relative min-h-screen bg-[#0a0a0a] overflow-hidden flex flex-col pt-32 px-8 md:px-16 z-10">
+          <div className="absolute bottom-10 left-1/2 -translate-x-1/2 md:top-63 md:bottom-auto md:left-auto md:-left-4 md:translate-x-0 w-[340px] h-[320px] md:w-[450px] md:h-[400px] opacity-80 z-0">
+            <InViewCanvas
+              camera={{ position: [0, 0, 15], fov: 45 }}
+              dpr={[1, 1.5]}
+              gl={{ antialias: false, powerPreference: "high-performance" }}
+            >
               <ScrollFriendlyOrbitControls />
               <WireframeGlobe setIsDrag={setIsDrag} />
             </InViewCanvas>
@@ -741,7 +770,7 @@ export default function Home() {
                   href="https://github.com/KUSH-Q-37"
                   target="_blank"
                   rel="noreferrer"
-                  className="p-2 text-[#00ff33] hover:text-white transition-colors duration-300 cursor-none"
+                  className="p-2 text-[#00ff33] hover:text-white active:text-white transition-colors duration-300 cursor-none"
                   aria-label="GitHub"
                 >
                   <FaGithub className="w-7 h-7 md:w-5 md:h-5" />
@@ -751,7 +780,7 @@ export default function Home() {
                   href="https://www.linkedin.com/in/kush-bhardwaj-73a65628b/"
                   target="_blank"
                   rel="noreferrer"
-                  className="p-2 text-[#00ff33] hover:text-white transition-colors duration-300 cursor-none"
+                  className="p-2 text-[#00ff33] hover:text-white active:text-white transition-colors duration-300 cursor-none"
                   aria-label="LinkedIn"
                 >
                   <FaLinkedin className="w-7 h-7 md:w-5 md:h-5" />
@@ -761,7 +790,7 @@ export default function Home() {
                   href="https://leetcode.com/u/kush968/"
                   target="_blank"
                   rel="noreferrer"
-                  className="p-2 text-[#00ff33] hover:text-white transition-colors duration-300 cursor-none"
+                  className="p-2 text-[#00ff33] hover:text-white active:text-white transition-colors duration-300 cursor-none"
                   aria-label="LeetCode"
                 >
                   <SiLeetcode className="w-7 h-7 md:w-5 md:h-5" />

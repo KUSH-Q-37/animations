@@ -80,7 +80,7 @@ export default function ContactForm() {
       {/* 2. Visual Label acting as the button to bypass cursor hover effect */}
       <label 
         htmlFor="contact-submit-btn"
-        className={`mt-2 bg-transparent hover:bg-[#00ff33] text-[#00ff33] hover:text-black border border-[#00ff33] font-mono text-xs tracking-[0.2em] uppercase py-4 transition-all duration-300 w-full select-none cursor-none text-center flex items-center justify-center ${
+        className={`mt-2 bg-transparent hover:bg-[#00ff33] active:bg-[#00ff33] text-[#00ff33] hover:text-black active:text-black border border-[#00ff33] font-mono text-xs tracking-[0.2em] uppercase py-4 transition-all duration-300 w-full select-none cursor-none text-center flex items-center justify-center ${
           status === 'loading' || status === 'success' ? 'opacity-50 pointer-events-none' : ''
         }`}
       >
