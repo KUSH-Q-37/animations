@@ -5,7 +5,7 @@ Three.js / React Three Fiber hero and background scenes, Framer Motion
 scroll animations, a small WebGL "shoot the skills" game, and a
 Formspree-backed contact form.
 
-Live: https://portfolio-wine-delta-35.vercel.app
+Live: https://kush-bhardwaj.vercel.app/
 
 ## Stack
 
