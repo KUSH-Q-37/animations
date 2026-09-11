@@ -375,7 +375,7 @@ const Bullet = ({
       t - travelTime;
 
     /* =====================================================
-       IMPACT CORE
+       CORE
        ===================================================== */
 
     const coreT =
@@ -402,7 +402,7 @@ const Bullet = ({
     }
 
     /* =====================================================
-       SHOCKWAVE
+       RING
        ===================================================== */
 
     const ringT =
@@ -662,7 +662,7 @@ const Target = ({
       delta * TARGET_SPEED;
 
     /* =====================================================
-       SUBTLE ROTATION
+       ROTATION
        ===================================================== */
 
     meshRef.current.rotation.y =
@@ -737,10 +737,6 @@ const Target = ({
         setHovered(false)
       }
     >
-      {/* =================================================
-          TARGET BODY
-          ================================================= */}
-
       <boxGeometry
         args={[
           boxWidth,
@@ -757,10 +753,6 @@ const Target = ({
         }
         toneMapped={false}
       />
-
-      {/* =================================================
-          SKILL TEXT
-          ================================================= */}
 
       <Text
         position={[
@@ -831,6 +823,25 @@ const GameScene = ({
     );
 
   /* =======================================================
+     RESOLVED SKILLS
+     
+     This is the ACTUAL source of truth
+     for game completion.
+     ======================================================= */
+
+  const resolvedSkillsRef =
+    useRef<Set<string>>(
+      new Set(),
+    );
+
+  /* =======================================================
+     GAME OVER GUARD
+     ======================================================= */
+
+  const gameOverTriggeredRef =
+    useRef(false);
+
+  /* =======================================================
      RESET GAME
      ======================================================= */
 
@@ -839,6 +850,12 @@ const GameScene = ({
       shuffleArray(
         SKILLS_LIST,
       );
+
+    resolvedSkillsRef.current =
+      new Set();
+
+    gameOverTriggeredRef.current =
+      false;
 
     setTargets([]);
 
@@ -871,12 +888,58 @@ const GameScene = ({
   }, [size]);
 
   /* =======================================================
+     CHECK GAME COMPLETION
+     ======================================================= */
+
+  const checkGameComplete =
+    useCallback(() => {
+      /*
+       * IMPORTANT:
+       *
+       * We do NOT check the queue.
+       *
+       * We check how many unique skills
+       * have actually been resolved.
+       */
+
+      if (
+        gameOverTriggeredRef.current
+      ) {
+        return;
+      }
+
+      const resolvedCount =
+        resolvedSkillsRef.current
+          .size;
+
+      if (
+        resolvedCount >=
+        SKILLS_LIST.length
+      ) {
+        gameOverTriggeredRef.current =
+          true;
+
+        setTimeout(() => {
+          onGameOver();
+        }, 300);
+      }
+    }, [onGameOver]);
+
+  /* =======================================================
      SPAWN TARGET
      ======================================================= */
 
   const spawnTarget =
     useCallback(() => {
       setTargets((prev) => {
+        /* Game already completed */
+
+        if (
+          gameOverTriggeredRef.current
+        ) {
+          return prev;
+        }
+
         /* Maximum targets */
 
         if (
@@ -896,7 +959,7 @@ const GameScene = ({
         }
 
         /* =================================================
-           NEXT UNIQUE SKILL
+           NEXT SKILL
            ================================================= */
 
         const text =
@@ -1068,8 +1131,32 @@ const GameScene = ({
         return;
       }
 
+      /*
+       * Prevent duplicate resolution.
+       *
+       * This matters because a user could
+       * theoretically click a target multiple
+       * times before React finishes removing it.
+       */
+
+      if (
+        resolvedSkillsRef.current.has(
+          target.text,
+        )
+      ) {
+        return;
+      }
+
       /* =================================================
-         RECORD SKILL
+         MARK RESOLVED
+         ================================================= */
+
+      resolvedSkillsRef.current.add(
+        target.text,
+      );
+
+      /* =================================================
+         RECORD HIT
          ================================================= */
 
       onSkillHit(
@@ -1100,7 +1187,7 @@ const GameScene = ({
       );
 
       /* =================================================
-         BULLET / IMPACT
+         BULLET
          ================================================= */
 
       setBullets(
@@ -1121,30 +1208,16 @@ const GameScene = ({
       );
 
       /* =================================================
-         GAME OVER
-         
-         ONLY WHEN:
-         
-         1. No more skills are waiting to spawn
-         2. No targets remain inside the game
+         CHECK COMPLETION
          ================================================= */
 
-      if (
-        skillQueueRef.current
-          .length === 0 &&
-        remainingTargets.length ===
-          0
-      ) {
-        setTimeout(() => {
-          onGameOver();
-        }, 300);
-      }
+      checkGameComplete();
     },
     [
       targets,
       setScore,
       onSkillHit,
-      onGameOver,
+      checkGameComplete,
     ],
   );
 
@@ -1165,8 +1238,28 @@ const GameScene = ({
           return;
         }
 
+        /*
+         * Prevent duplicate resolution.
+         */
+
+        if (
+          resolvedSkillsRef.current.has(
+            target.text,
+          )
+        ) {
+          return;
+        }
+
         /* =================================================
-           RECORD SKILL
+           MARK RESOLVED
+           ================================================= */
+
+        resolvedSkillsRef.current.add(
+          target.text,
+        );
+
+        /* =================================================
+           RECORD MISS
            ================================================= */
 
         onSkillMiss(
@@ -1188,34 +1281,20 @@ const GameScene = ({
         );
 
         /*
-         * Missed skills are NOT
-         * returned to the queue.
+         * Missed skills are permanently
+         * removed from the game.
          */
 
         /* =================================================
-           GAME OVER
-           
-           ONLY WHEN:
-           
-           1. No more skills are waiting to spawn
-           2. No targets remain inside the game
+           CHECK COMPLETION
            ================================================= */
 
-        if (
-          skillQueueRef.current
-            .length === 0 &&
-          remainingTargets.length ===
-            0
-        ) {
-          setTimeout(() => {
-            onGameOver();
-          }, 300);
-        }
+        checkGameComplete();
       },
       [
         targets,
         onSkillMiss,
-        onGameOver,
+        checkGameComplete,
       ],
     );
 
@@ -1257,7 +1336,7 @@ const GameScene = ({
       />
 
       {/* =================================================
-          MOVING WIREFRAME
+          MOVING GRID
           ================================================= */}
 
       <MovingGrid
@@ -1310,6 +1389,430 @@ const GameScene = ({
         ),
       )}
     </>
+  );
+};
+
+/* =========================================================
+   SKILL RESULTS
+   ========================================================= */
+
+const SkillResults = ({
+  hitSkills,
+  missSkills,
+  totalSkills,
+}: {
+  hitSkills: string[];
+
+  missSkills: string[];
+
+  totalSkills: number;
+}) => {
+  const resultsRef =
+    useRef<HTMLDivElement>(null);
+
+  const [
+    cursorPosition,
+    setCursorPosition,
+  ] = useState({
+    x: 0,
+    y: 0,
+  });
+
+  const [cursorVisible, setCursorVisible] =
+    useState(false);
+
+  const totalDiscovered =
+    hitSkills.length +
+    missSkills.length;
+
+  const handleMouseMove = (
+    e: React.MouseEvent<HTMLDivElement>,
+  ) => {
+    const rect =
+      resultsRef.current?.getBoundingClientRect();
+
+    if (!rect) {
+      return;
+    }
+
+    setCursorPosition({
+      x: e.clientX - rect.left,
+      y: e.clientY - rect.top,
+    });
+  };
+
+  return (
+    <motion.div
+      ref={resultsRef}
+      initial={{
+        opacity: 0,
+        y: 20,
+      }}
+      animate={{
+        opacity: 1,
+        y: 0,
+      }}
+      exit={{
+        opacity: 0,
+        y: 20,
+      }}
+      transition={{
+        duration: 0.3,
+      }}
+      onMouseEnter={() =>
+        setCursorVisible(true)
+      }
+      onMouseLeave={() =>
+        setCursorVisible(false)
+      }
+      onMouseMove={
+        handleMouseMove
+      }
+      className="
+        relative
+        mt-8
+        w-full
+        border
+        border-[#1a1a1a]
+        bg-black
+        font-mono
+        cursor-none
+        overflow-hidden
+      "
+    >
+      {/* =================================================
+          CUSTOM CURSOR
+          ================================================= */}
+
+      <AnimatePresence>
+        {cursorVisible && (
+          <motion.div
+            initial={{
+              opacity: 0,
+              scale: 0.5,
+            }}
+            animate={{
+              opacity: 1,
+              scale: 1,
+            }}
+            exit={{
+              opacity: 0,
+              scale: 0.5,
+            }}
+            transition={{
+              duration: 0.12,
+            }}
+            className="
+              pointer-events-none
+              absolute
+              z-50
+              w-8
+              h-8
+              -translate-x-1/2
+              -translate-y-1/2
+            "
+            style={{
+              left: cursorPosition.x,
+              top: cursorPosition.y,
+            }}
+          >
+            {/* Horizontal line */}
+
+            <div
+              className="
+                absolute
+                left-0
+                top-1/2
+                w-full
+                h-px
+                bg-[#00ff33]
+              "
+            />
+
+            {/* Vertical line */}
+
+            <div
+              className="
+                absolute
+                top-0
+                left-1/2
+                w-px
+                h-full
+                bg-[#00ff33]
+              "
+            />
+
+            {/* Center dot */}
+
+            <div
+              className="
+                absolute
+                left-1/2
+                top-1/2
+                w-1
+                h-1
+                -translate-x-1/2
+                -translate-y-1/2
+                bg-[#ffffff]
+              "
+            />
+
+            {/* Cursor label */}
+
+            <div
+              className="
+                absolute
+                left-5
+                top-5
+                whitespace-nowrap
+                text-[7px]
+                tracking-[0.15em]
+                text-[#00ff33]
+              "
+            >
+              INSPECT
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* =================================================
+          RESULTS HEADER
+          ================================================= */}
+
+      <div
+        className="
+          flex
+          items-center
+          justify-between
+          border-b
+          border-[#1a1a1a]
+          px-4
+          py-3
+          text-[10px]
+          md:text-xs
+          tracking-[0.2em]
+          text-white
+        "
+      >
+        <span>
+          + SKILL RESULTS
+        </span>
+
+        <span className="text-[#666]">
+          {totalDiscovered} /{" "}
+          {totalSkills}
+        </span>
+      </div>
+
+      {/* =================================================
+          RESULTS GRID
+          ================================================= */}
+
+      <div
+        className="
+          grid
+          grid-cols-1
+          md:grid-cols-2
+        "
+      >
+        {/* =================================================
+            HIT
+            ================================================= */}
+
+        <div
+          className="
+            border-b
+            md:border-b-0
+            md:border-r
+            border-[#1a1a1a]
+            p-4
+          "
+        >
+          {/* Hit header */}
+
+          <div
+            className="
+              mb-4
+              flex
+              items-center
+              justify-between
+              text-[10px]
+              md:text-xs
+              tracking-[0.2em]
+            "
+          >
+            <span className="text-[#00ff33]">
+              HIT
+            </span>
+
+            <span className="text-[#00ff33]">
+              {hitSkills.length
+                .toString()
+                .padStart(
+                  2,
+                  "0",
+                )}
+            </span>
+          </div>
+
+          {/* Hit list */}
+
+          {hitSkills.length ===
+          0 ? (
+            <div
+              className="
+                py-4
+                text-[10px]
+                tracking-widest
+                text-[#444]
+              "
+            >
+              NO SKILLS HIT
+            </div>
+          ) : (
+            <div
+              className="
+                flex
+                flex-wrap
+                gap-2
+              "
+            >
+              {hitSkills.map(
+                (
+                  skill,
+                  index,
+                ) => (
+                  <motion.div
+                    key={`${skill}-${index}`}
+                    initial={{
+                      opacity: 0,
+                      scale: 0.9,
+                    }}
+                    animate={{
+                      opacity: 1,
+                      scale: 1,
+                    }}
+                    className="
+                      border
+                      border-[#00ff33]
+                      px-3
+                      py-2
+                      text-[9px]
+                      md:text-[10px]
+                      tracking-wider
+                      text-[#00ff33]
+                      transition-colors
+                      duration-200
+                      hover:bg-[#00ff33]
+                      hover:text-black
+                    "
+                  >
+                    {skill}
+                  </motion.div>
+                ),
+              )}
+            </div>
+          )}
+        </div>
+
+        {/* =================================================
+            MISS
+            ================================================= */}
+
+        <div
+          className="
+            p-4
+          "
+        >
+          {/* Miss header */}
+
+          <div
+            className="
+              mb-4
+              flex
+              items-center
+              justify-between
+              text-[10px]
+              md:text-xs
+              tracking-[0.2em]
+            "
+          >
+            <span className="text-[#ff3333]">
+              MISS
+            </span>
+
+            <span className="text-[#ff3333]">
+              {missSkills.length
+                .toString()
+                .padStart(
+                  2,
+                  "0",
+                )}
+            </span>
+          </div>
+
+          {/* Miss list */}
+
+          {missSkills.length ===
+          0 ? (
+            <div
+              className="
+                py-4
+                text-[10px]
+                tracking-widest
+                text-[#444]
+              "
+            >
+              NO SKILLS MISSED
+            </div>
+          ) : (
+            <div
+              className="
+                flex
+                flex-wrap
+                gap-2
+              "
+            >
+              {missSkills.map(
+                (
+                  skill,
+                  index,
+                ) => (
+                  <motion.div
+                    key={`${skill}-${index}`}
+                    initial={{
+                      opacity: 0,
+                      scale: 0.9,
+                    }}
+                    animate={{
+                      opacity: 1,
+                      scale: 1,
+                    }}
+                    className="
+                      border
+                      border-[#ff3333]
+                      px-3
+                      py-2
+                      text-[9px]
+                      md:text-[10px]
+                      tracking-wider
+                      text-[#ff3333]
+                      transition-colors
+                      duration-200
+                      hover:bg-[#ff3333]
+                      hover:text-black
+                    "
+                  >
+                    {skill}
+                  </motion.div>
+                ),
+              )}
+            </div>
+          )}
+        </div>
+      </div>
+    </motion.div>
   );
 };
 
@@ -1385,10 +1888,22 @@ export default function SkillCloud({
     useCallback(
       (skill: string) => {
         setHitSkills(
-          (prev) => [
-            ...prev,
-            skill,
-          ],
+          (prev) => {
+            /*
+             * Safety against duplicate entries.
+             */
+
+            if (
+              prev.includes(skill)
+            ) {
+              return prev;
+            }
+
+            return [
+              ...prev,
+              skill,
+            ];
+          },
         );
       },
       [],
@@ -1402,10 +1917,22 @@ export default function SkillCloud({
     useCallback(
       (skill: string) => {
         setMissSkills(
-          (prev) => [
-            ...prev,
-            skill,
-          ],
+          (prev) => {
+            /*
+             * Safety against duplicate entries.
+             */
+
+            if (
+              prev.includes(skill)
+            ) {
+              return prev;
+            }
+
+            return [
+              ...prev,
+              skill,
+            ];
+          },
         );
       },
       [],
@@ -1456,13 +1983,9 @@ export default function SkillCloud({
 
     setFlash(false);
 
-    /* Clear previous results */
-
     setHitSkills([]);
 
     setMissSkills([]);
-
-    /* Create fresh game */
 
     setGameKey(
       (key) => key + 1,
@@ -1669,7 +2192,7 @@ export default function SkillCloud({
                     tracking-[0.25em]
                   "
                 >
-                  GAME OVER
+                  RUN COMPLETE
                 </div>
 
                 <div
@@ -1681,7 +2204,7 @@ export default function SkillCloud({
                     text-white
                   "
                 >
-                  ALL SKILLS DISCOVERED
+                  ALL SKILLS RESOLVED
                 </div>
 
                 <div
@@ -1695,6 +2218,20 @@ export default function SkillCloud({
                 >
                   SCORE: {score} /{" "}
                   {SKILLS_LIST.length}
+                </div>
+
+                <div
+                  className="
+                    mt-1
+                    text-[9px]
+                    tracking-widest
+                    text-[#666]
+                  "
+                >
+                  HIT:{" "}
+                  {hitSkills.length}{" "}
+                  / MISS:{" "}
+                  {missSkills.length}
                 </div>
 
                 <button
@@ -1743,7 +2280,7 @@ export default function SkillCloud({
         "
       >
         {gameOver
-          ? "ALL TARGETS CLEARED"
+          ? "ALL TARGETS RESOLVED"
           : "BREAK THE TARGETS!"}
       </div>
 
@@ -1753,252 +2290,17 @@ export default function SkillCloud({
 
       <AnimatePresence>
         {totalDiscovered > 0 && (
-          <motion.div
-            initial={{
-              opacity: 0,
-              y: 20,
-            }}
-            animate={{
-              opacity: 1,
-              y: 0,
-            }}
-            exit={{
-              opacity: 0,
-              y: 20,
-            }}
-            transition={{
-              duration: 0.3,
-            }}
-            className="
-              mt-8
-              w-full
-              border
-              border-[#1a1a1a]
-              bg-black
-              font-mono
-            "
-          >
-            {/* =================================================
-                RESULTS HEADER
-                ================================================= */}
-
-            <div
-              className="
-                flex
-                items-center
-                justify-between
-                border-b
-                border-[#1a1a1a]
-                px-4
-                py-3
-                text-[10px]
-                md:text-xs
-                tracking-[0.2em]
-                text-white
-              "
-            >
-              <span>
-                + SKILL RESULTS
-              </span>
-
-              <span className="text-[#666]">
-                {totalDiscovered} /{" "}
-                {totalSkills}
-              </span>
-            </div>
-
-            {/* =================================================
-                RESULTS GRID
-                ================================================= */}
-
-            <div
-              className="
-                grid
-                grid-cols-1
-                md:grid-cols-2
-              "
-            >
-              {/* ===============================================
-                  HIT
-                  =============================================== */}
-
-              <div
-                className="
-                  border-b
-                  md:border-b-0
-                  md:border-r
-                  border-[#1a1a1a]
-                  p-4
-                "
-              >
-                <div
-                  className="
-                    mb-4
-                    flex
-                    items-center
-                    justify-between
-                    text-[10px]
-                    md:text-xs
-                    tracking-[0.2em]
-                  "
-                >
-                  <span className="text-[#00ff33]">
-                    HIT
-                  </span>
-
-                  <span className="text-[#00ff33]">
-                    {hitSkills.length
-                      .toString()
-                      .padStart(
-                        2,
-                        "0",
-                      )}
-                  </span>
-                </div>
-
-                {hitSkills.length ===
-                0 ? (
-                  <div
-                    className="
-                      py-4
-                      text-[10px]
-                      tracking-widest
-                      text-[#444]
-                    "
-                  >
-                    NO SKILLS HIT
-                  </div>
-                ) : (
-                  <div
-                    className="
-                      flex
-                      flex-wrap
-                      gap-2
-                    "
-                  >
-                    {hitSkills.map(
-                      (
-                        skill,
-                        index,
-                      ) => (
-                        <motion.div
-                          key={`${skill}-${index}`}
-                          initial={{
-                            opacity: 0,
-                            scale: 0.9,
-                          }}
-                          animate={{
-                            opacity: 1,
-                            scale: 1,
-                          }}
-                          className="
-                            border
-                            border-[#00ff33]
-                            px-3
-                            py-2
-                            text-[9px]
-                            md:text-[10px]
-                            tracking-wider
-                            text-[#00ff33]
-                          "
-                        >
-                          {skill}
-                        </motion.div>
-                      ),
-                    )}
-                  </div>
-                )}
-              </div>
-
-              {/* ===============================================
-                  MISS
-                  =============================================== */}
-
-              <div
-                className="
-                  p-4
-                "
-              >
-                <div
-                  className="
-                    mb-4
-                    flex
-                    items-center
-                    justify-between
-                    text-[10px]
-                    md:text-xs
-                    tracking-[0.2em]
-                  "
-                >
-                  <span className="text-[#ff3333]">
-                    MISS
-                  </span>
-
-                  <span className="text-[#ff3333]">
-                    {missSkills.length
-                      .toString()
-                      .padStart(
-                        2,
-                        "0",
-                      )}
-                  </span>
-                </div>
-
-                {missSkills.length ===
-                0 ? (
-                  <div
-                    className="
-                      py-4
-                      text-[10px]
-                      tracking-widest
-                      text-[#444]
-                    "
-                  >
-                    NO SKILLS MISSED
-                  </div>
-                ) : (
-                  <div
-                    className="
-                      flex
-                      flex-wrap
-                      gap-2
-                    "
-                  >
-                    {missSkills.map(
-                      (
-                        skill,
-                        index,
-                      ) => (
-                        <motion.div
-                          key={`${skill}-${index}`}
-                          initial={{
-                            opacity: 0,
-                            scale: 0.9,
-                          }}
-                          animate={{
-                            opacity: 1,
-                            scale: 1,
-                          }}
-                          className="
-                            border
-                            border-[#ff3333]
-                            px-3
-                            py-2
-                            text-[9px]
-                            md:text-[10px]
-                            tracking-wider
-                            text-[#ff3333]
-                          "
-                        >
-                          {skill}
-                        </motion.div>
-                      ),
-                    )}
-                  </div>
-                )}
-              </div>
-            </div>
-          </motion.div>
+          <SkillResults
+            hitSkills={
+              hitSkills
+            }
+            missSkills={
+              missSkills
+            }
+            totalSkills={
+              totalSkills
+            }
+          />
         )}
       </AnimatePresence>
     </div>
