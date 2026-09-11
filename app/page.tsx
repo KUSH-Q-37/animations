@@ -218,7 +218,7 @@ const TerrainBackground = () => {
 };
 
 const RESUME_URL =
-  "https://drive.google.com/file/d/1nQmD5ywDHGVHKqbaheoTYV5GjxSRtHb3/view?usp=sharing";
+  "https://drive.google.com/file/d/11xTgD2Bc-p8OK3mMnHHXmGVidgGoylRV/view?usp=sharing";
 
 type Project = {
   id: string;
