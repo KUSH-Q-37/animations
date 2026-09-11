@@ -78,19 +78,14 @@ const SKILLS_LIST = [
    GAME SETTINGS
    ========================================================= */
 
-// Maximum number of targets visible at once.
 const MAX_TARGETS = 4;
 
-// Slower spawn = easier to read.
 const SPAWN_INTERVAL = 2000;
 
-// Slightly slower movement.
 const TARGET_SPEED = 18;
 
-// Prevent targets from appearing too close together.
 const MIN_TARGET_DISTANCE = 7;
 
-// Spawn range.
 const MIN_SPAWN_Z = -105;
 const MAX_SPAWN_Z = -92;
 
@@ -105,6 +100,7 @@ const MUZZLE_POSITION = new THREE.Vector3(
 );
 
 const BULLET_SPEED = 70;
+
 const MIN_TRAVEL_TIME = 0.05;
 const MAX_TRAVEL_TIME = 0.22;
 
@@ -125,10 +121,12 @@ interface TargetProps {
   id: number;
   text: string;
   initialPosition: [number, number, number];
+
   onHit: (
     id: number,
     point: THREE.Vector3,
   ) => void;
+
   onMiss: (id: number) => void;
 }
 
@@ -194,62 +192,62 @@ const Bullet = ({
   const ringMatRef =
     useRef<THREE.MeshBasicMaterial>(null);
 
-  const elapsed =
-    useRef(0);
+  const elapsed = useRef(0);
 
-  const doneRef =
-    useRef(false);
+  const doneRef = useRef(false);
 
-  const { direction, quaternion, travelTime, streakLength } =
-    useMemo(() => {
-      const dir =
-        new THREE.Vector3().subVectors(
-          to,
-          from,
-        );
-
-      const dist = Math.max(
-        dir.length(),
-        0.001,
+  const {
+    direction,
+    quaternion,
+    travelTime,
+    streakLength,
+  } = useMemo(() => {
+    const dir =
+      new THREE.Vector3().subVectors(
+        to,
+        from,
       );
 
-      const normDir =
-        dir.clone().normalize();
+    const dist = Math.max(
+      dir.length(),
+      0.001,
+    );
 
-      const quat =
-        new THREE.Quaternion().setFromUnitVectors(
-          new THREE.Vector3(
-            0,
-            1,
-            0,
-          ),
-          normDir,
-        );
+    const normDir =
+      dir.clone().normalize();
 
-      const tTime =
-        THREE.MathUtils.clamp(
-          dist / BULLET_SPEED,
-          MIN_TRAVEL_TIME,
-          MAX_TRAVEL_TIME,
-        );
+    const quat =
+      new THREE.Quaternion().setFromUnitVectors(
+        new THREE.Vector3(
+          0,
+          1,
+          0,
+        ),
+        normDir,
+      );
 
-      return {
-        direction: normDir,
-        quaternion: quat,
-        travelTime: tTime,
-        streakLength:
-          Math.min(
-            dist * 0.35,
-            1.1,
-          ),
-      };
-    }, [from, to]);
+    const tTime =
+      THREE.MathUtils.clamp(
+        dist / BULLET_SPEED,
+        MIN_TRAVEL_TIME,
+        MAX_TRAVEL_TIME,
+      );
+
+    return {
+      direction: normDir,
+      quaternion: quat,
+      travelTime: tTime,
+      streakLength: Math.min(
+        dist * 0.35,
+        1.1,
+      ),
+    };
+  }, [from, to]);
 
   useFrame((_, delta) => {
     elapsed.current += delta;
 
-    const t =
-      elapsed.current;
+    const t = elapsed.current;
 
     /* -------------------------------------------------------
        BULLET IN FLIGHT
@@ -259,10 +257,9 @@ const Bullet = ({
       const travelT =
         t / travelTime;
 
-      const pos =
-        from
-          .clone()
-          .lerp(to, travelT);
+      const pos = from
+        .clone()
+        .lerp(to, travelT);
 
       if (bulletRef.current) {
         bulletRef.current.visible =
@@ -321,17 +318,14 @@ const Bullet = ({
 
     /* Core */
 
-    const coreT =
-      Math.min(
-        impactT /
-          CORE_LIFETIME,
-        1,
-      );
+    const coreT = Math.min(
+      impactT / CORE_LIFETIME,
+      1,
+    );
 
     if (coreRef.current) {
       coreRef.current.scale.setScalar(
-        1.6 -
-          coreT * 1.4,
+        1.6 - coreT * 1.4,
       );
     }
 
@@ -342,17 +336,14 @@ const Bullet = ({
 
     /* Ring */
 
-    const ringT =
-      Math.min(
-        impactT /
-          RING_LIFETIME,
-        1,
-      );
+    const ringT = Math.min(
+      impactT / RING_LIFETIME,
+      1,
+    );
 
     if (ringRef.current) {
       ringRef.current.scale.setScalar(
-        0.3 +
-          ringT * 1.5,
+        0.3 + ringT * 1.5,
       );
     }
 
@@ -364,12 +355,10 @@ const Bullet = ({
     /* Cleanup */
 
     if (
-      impactT >=
-        RING_LIFETIME &&
+      impactT >= RING_LIFETIME &&
       !doneRef.current
     ) {
-      doneRef.current =
-        true;
+      doneRef.current = true;
 
       onDone();
     }
@@ -481,9 +470,7 @@ const Bullet = ({
             THREE.AdditiveBlending
           }
           depthWrite={false}
-          side={
-            THREE.DoubleSide
-          }
+          side={THREE.DoubleSide}
         />
       </mesh>
     </group>
@@ -494,13 +481,28 @@ const Bullet = ({
    MOVING GRID
    ========================================================= */
 
-const MovingGrid = () => {
+const MovingGrid = ({
+  gameOver,
+}: {
+  gameOver: boolean;
+}) => {
   const gridRef =
     useRef<THREE.Group>(null);
 
   useFrame((_, delta) => {
-    if (!gridRef.current)
+    /*
+     * STOP THE WIREFRAME WHEN GAME IS OVER
+     *
+     * The grid stays exactly where it was
+     * when the game ended.
+     */
+
+    if (
+      !gridRef.current ||
+      gameOver
+    ) {
       return;
+    }
 
     gridRef.current.position.z +=
       delta * 15;
@@ -509,8 +511,7 @@ const MovingGrid = () => {
       gridRef.current.position.z >
       10
     ) {
-      gridRef.current.position.z =
-        0;
+      gridRef.current.position.z = 0;
     }
   });
 
@@ -550,8 +551,7 @@ const Target = ({
   const [hovered, setHovered] =
     useState(false);
 
-  const timeRef =
-    useRef(0);
+  const timeRef = useRef(0);
 
   const missedRef =
     useRef(false);
@@ -560,8 +560,7 @@ const Target = ({
     if (!meshRef.current)
       return;
 
-    timeRef.current +=
-      delta;
+    timeRef.current += delta;
 
     const time =
       timeRef.current;
@@ -569,8 +568,7 @@ const Target = ({
     /* Slower movement */
 
     meshRef.current.position.z +=
-      delta *
-      TARGET_SPEED;
+      delta * TARGET_SPEED;
 
     /* Much more subtle rotation */
 
@@ -591,8 +589,7 @@ const Target = ({
         10 &&
       !missedRef.current
     ) {
-      missedRef.current =
-        true;
+      missedRef.current = true;
 
       onMiss(id);
     }
@@ -604,8 +601,7 @@ const Target = ({
 
   const boxWidth =
     THREE.MathUtils.clamp(
-      text.length * 0.32 +
-        1.1,
+      text.length * 0.32 + 1.1,
       3.2,
       8.5,
     );
@@ -693,12 +689,17 @@ const GameScene = ({
   setScore,
   onGameOver,
   gameKey,
+  gameOver,
 }: {
   setScore: React.Dispatch<
     React.SetStateAction<number>
   >;
+
   onGameOver: () => void;
+
   gameKey: number;
+
+  gameOver: boolean;
 }) => {
   const [targets, setTargets] =
     useState<TargetData[]>([]);
@@ -708,7 +709,7 @@ const GameScene = ({
 
   /* =======================================================
      SHUFFLED SKILL QUEUE
-
+     
      Every skill appears exactly once.
      ======================================================= */
 
@@ -724,7 +725,7 @@ const GameScene = ({
 
   /* =======================================================
      RESET GAME QUEUE
-
+     
      Every time gameKey changes,
      create a fresh shuffled list.
      ======================================================= */
@@ -746,17 +747,15 @@ const GameScene = ({
      CAMERA ASPECT
      ======================================================= */
 
-  const { size } =
-    useThree();
+  const { size } = useThree();
 
-  const aspectRef =
-    useRef(
-      size.width /
-        Math.max(
-          size.height,
-          1,
-        ),
-    );
+  const aspectRef = useRef(
+    size.width /
+      Math.max(
+        size.height,
+        1,
+      ),
+  );
 
   useEffect(() => {
     aspectRef.current =
@@ -833,8 +832,7 @@ const GameScene = ({
         let y = 0;
         let z = 0;
 
-        let valid =
-          false;
+        let valid = false;
 
         for (
           let attempt = 0;
@@ -853,6 +851,7 @@ const GameScene = ({
            * This keeps text away from the
            * extreme top/bottom edges.
            */
+
           y =
             THREE.MathUtils.lerp(
               -0.5,
@@ -905,7 +904,9 @@ const GameScene = ({
             id:
               Date.now() +
               Math.random(),
+
             text,
+
             position: [
               x,
               y,
@@ -980,8 +981,10 @@ const GameScene = ({
           id:
             Date.now() +
             Math.random(),
+
           from:
             MUZZLE_POSITION.clone(),
+
           to: point,
         },
       ],
@@ -1065,7 +1068,17 @@ const GameScene = ({
         ]}
       />
 
-      <MovingGrid />
+      {/* =================================================
+          MOVING WIREFRAME
+          
+          IMPORTANT:
+          gameOver is passed here so the grid
+          freezes when the game finishes.
+          ================================================= */}
+
+      <MovingGrid
+        gameOver={gameOver}
+      />
 
       {/* Targets */}
 
@@ -1097,7 +1110,9 @@ const GameScene = ({
             from={
               bullet.from
             }
-            to={bullet.to}
+            to={
+              bullet.to
+            }
             onDone={() =>
               handleBulletDone(
                 bullet.id,
@@ -1322,6 +1337,9 @@ export default function SkillCloud({
             onGameOver={
               handleGameOver
             }
+            gameOver={
+              gameOver
+            }
           />
         </InViewCanvas>
 
@@ -1409,6 +1427,7 @@ export default function SkillCloud({
                 <button
                   onClick={(e) => {
                     e.stopPropagation();
+
                     restartGame();
                   }}
                   className="
