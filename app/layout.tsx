@@ -12,7 +12,7 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
-const SITE_URL = "https://portfolio-wine-delta-35.vercel.app";
+const SITE_URL = "kush-bhardwaj.vercel.app/";
 const SITE_TITLE = "Kush Bhardwaj | Portfolio";
 const SITE_DESCRIPTION =
   "Full-Stack Developer & 2026 CS Graduate crafting interactive, high-performance digital experiences at VM One Technologies.";
