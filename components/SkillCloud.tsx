@@ -9,7 +9,10 @@ import {
 } from "react";
 import { useFrame, useThree } from "@react-three/fiber";
 import { Text } from "@react-three/drei";
-import { motion, AnimatePresence } from "framer-motion";
+import {
+  motion,
+  AnimatePresence,
+} from "framer-motion";
 import * as THREE from "three";
 import InViewCanvas from "@/components/InViewCanvas";
 
@@ -93,11 +96,12 @@ const MAX_SPAWN_Z = -92;
    BULLET SETTINGS
    ========================================================= */
 
-const MUZZLE_POSITION = new THREE.Vector3(
-  0,
-  -2.6,
-  7.4,
-);
+const MUZZLE_POSITION =
+  new THREE.Vector3(
+    0,
+    -2.6,
+    7.4,
+  );
 
 const BULLET_SPEED = 70;
 
@@ -113,26 +117,42 @@ const RING_LIFETIME = 0.24;
 
 interface TargetData {
   id: number;
+
   text: string;
-  position: [number, number, number];
+
+  position: [
+    number,
+    number,
+    number,
+  ];
 }
 
 interface TargetProps {
   id: number;
+
   text: string;
-  initialPosition: [number, number, number];
+
+  initialPosition: [
+    number,
+    number,
+    number,
+  ];
 
   onHit: (
     id: number,
     point: THREE.Vector3,
   ) => void;
 
-  onMiss: (id: number) => void;
+  onMiss: (
+    id: number,
+  ) => void;
 }
 
 interface BulletData {
   id: number;
+
   from: THREE.Vector3;
+
   to: THREE.Vector3;
 }
 
@@ -140,7 +160,9 @@ interface BulletData {
    SHUFFLE
    ========================================================= */
 
-const shuffleArray = <T,>(array: T[]) => {
+const shuffleArray = <T,>(
+  array: T[],
+): T[] => {
   const result = [...array];
 
   for (
@@ -149,10 +171,14 @@ const shuffleArray = <T,>(array: T[]) => {
     i--
   ) {
     const j = Math.floor(
-      Math.random() * (i + 1),
+      Math.random() *
+        (i + 1),
     );
 
-    [result[i], result[j]] = [
+    [
+      result[i],
+      result[j],
+    ] = [
       result[j],
       result[i],
     ];
@@ -171,7 +197,9 @@ const Bullet = ({
   onDone,
 }: {
   from: THREE.Vector3;
+
   to: THREE.Vector3;
+
   onDone: () => void;
 }) => {
   const bulletRef =
@@ -184,17 +212,23 @@ const Bullet = ({
     useRef<THREE.Mesh>(null);
 
   const coreMatRef =
-    useRef<THREE.MeshBasicMaterial>(null);
+    useRef<THREE.MeshBasicMaterial>(
+      null,
+    );
 
   const ringRef =
     useRef<THREE.Mesh>(null);
 
   const ringMatRef =
-    useRef<THREE.MeshBasicMaterial>(null);
+    useRef<THREE.MeshBasicMaterial>(
+      null,
+    );
 
-  const elapsed = useRef(0);
+  const elapsed =
+    useRef(0);
 
-  const doneRef = useRef(false);
+  const doneRef =
+    useRef(false);
 
   const {
     direction,
@@ -235,33 +269,47 @@ const Bullet = ({
 
     return {
       direction: normDir,
+
       quaternion: quat,
+
       travelTime: tTime,
-      streakLength: Math.min(
-        dist * 0.35,
-        1.1,
-      ),
+
+      streakLength:
+        Math.min(
+          dist * 0.35,
+          1.1,
+        ),
     };
   }, [from, to]);
 
   useFrame((_, delta) => {
-    elapsed.current += delta;
+    elapsed.current +=
+      delta;
 
-    const t = elapsed.current;
+    const t =
+      elapsed.current;
 
-    /* -------------------------------------------------------
+    /* =====================================================
        BULLET IN FLIGHT
-       ------------------------------------------------------- */
+       ===================================================== */
 
-    if (t < travelTime) {
+    if (
+      t < travelTime
+    ) {
       const travelT =
         t / travelTime;
 
-      const pos = from
-        .clone()
-        .lerp(to, travelT);
+      const pos =
+        from
+          .clone()
+          .lerp(
+            to,
+            travelT,
+          );
 
-      if (bulletRef.current) {
+      if (
+        bulletRef.current
+      ) {
         bulletRef.current.visible =
           true;
 
@@ -270,7 +318,9 @@ const Bullet = ({
         );
       }
 
-      if (streakRef.current) {
+      if (
+        streakRef.current
+      ) {
         streakRef.current.visible =
           true;
 
@@ -289,26 +339,34 @@ const Bullet = ({
       return;
     }
 
-    /* -------------------------------------------------------
+    /* =====================================================
        IMPACT
-       ------------------------------------------------------- */
+       ===================================================== */
 
-    if (bulletRef.current) {
+    if (
+      bulletRef.current
+    ) {
       bulletRef.current.visible =
         false;
     }
 
-    if (streakRef.current) {
+    if (
+      streakRef.current
+    ) {
       streakRef.current.visible =
         false;
     }
 
-    if (coreRef.current) {
+    if (
+      coreRef.current
+    ) {
       coreRef.current.visible =
         true;
     }
 
-    if (ringRef.current) {
+    if (
+      ringRef.current
+    ) {
       ringRef.current.visible =
         true;
     }
@@ -316,49 +374,71 @@ const Bullet = ({
     const impactT =
       t - travelTime;
 
-    /* Core */
+    /* =====================================================
+       IMPACT CORE
+       ===================================================== */
 
-    const coreT = Math.min(
-      impactT / CORE_LIFETIME,
-      1,
-    );
+    const coreT =
+      Math.min(
+        impactT /
+          CORE_LIFETIME,
+        1,
+      );
 
-    if (coreRef.current) {
+    if (
+      coreRef.current
+    ) {
       coreRef.current.scale.setScalar(
-        1.6 - coreT * 1.4,
+        1.6 -
+          coreT * 1.4,
       );
     }
 
-    if (coreMatRef.current) {
+    if (
+      coreMatRef.current
+    ) {
       coreMatRef.current.opacity =
         1 - coreT;
     }
 
-    /* Ring */
+    /* =====================================================
+       SHOCKWAVE
+       ===================================================== */
 
-    const ringT = Math.min(
-      impactT / RING_LIFETIME,
-      1,
-    );
+    const ringT =
+      Math.min(
+        impactT /
+          RING_LIFETIME,
+        1,
+      );
 
-    if (ringRef.current) {
+    if (
+      ringRef.current
+    ) {
       ringRef.current.scale.setScalar(
-        0.3 + ringT * 1.5,
+        0.3 +
+          ringT * 1.5,
       );
     }
 
-    if (ringMatRef.current) {
+    if (
+      ringMatRef.current
+    ) {
       ringMatRef.current.opacity =
         1 - ringT;
     }
 
-    /* Cleanup */
+    /* =====================================================
+       CLEANUP
+       ===================================================== */
 
     if (
-      impactT >= RING_LIFETIME &&
+      impactT >=
+        RING_LIFETIME &&
       !doneRef.current
     ) {
-      doneRef.current = true;
+      doneRef.current =
+        true;
 
       onDone();
     }
@@ -366,7 +446,9 @@ const Bullet = ({
 
   return (
     <group>
-      {/* Bullet */}
+      {/* =================================================
+          BULLET
+          ================================================= */}
 
       <mesh
         ref={bulletRef}
@@ -390,7 +472,9 @@ const Bullet = ({
         />
       </mesh>
 
-      {/* Streak */}
+      {/* =================================================
+          STREAK
+          ================================================= */}
 
       <mesh
         ref={streakRef}
@@ -417,7 +501,9 @@ const Bullet = ({
         />
       </mesh>
 
-      {/* Impact */}
+      {/* =================================================
+          IMPACT CORE
+          ================================================= */}
 
       <mesh
         ref={coreRef}
@@ -445,7 +531,9 @@ const Bullet = ({
         />
       </mesh>
 
-      {/* Shockwave */}
+      {/* =================================================
+          SHOCKWAVE
+          ================================================= */}
 
       <mesh
         ref={ringRef}
@@ -470,7 +558,9 @@ const Bullet = ({
             THREE.AdditiveBlending
           }
           depthWrite={false}
-          side={THREE.DoubleSide}
+          side={
+            THREE.DoubleSide
+          }
         />
       </mesh>
     </group>
@@ -490,13 +580,6 @@ const MovingGrid = ({
     useRef<THREE.Group>(null);
 
   useFrame((_, delta) => {
-    /*
-     * STOP THE WIREFRAME WHEN GAME IS OVER
-     *
-     * The grid stays exactly where it was
-     * when the game ended.
-     */
-
     if (
       !gridRef.current ||
       gameOver
@@ -511,7 +594,8 @@ const MovingGrid = ({
       gridRef.current.position.z >
       10
     ) {
-      gridRef.current.position.z = 0;
+      gridRef.current.position.z =
+        0;
     }
   });
 
@@ -551,26 +635,35 @@ const Target = ({
   const [hovered, setHovered] =
     useState(false);
 
-  const timeRef = useRef(0);
+  const timeRef =
+    useRef(0);
 
   const missedRef =
     useRef(false);
 
   useFrame((_, delta) => {
-    if (!meshRef.current)
+    if (
+      !meshRef.current
+    ) {
       return;
+    }
 
-    timeRef.current += delta;
+    timeRef.current +=
+      delta;
 
     const time =
       timeRef.current;
 
-    /* Slower movement */
+    /* =====================================================
+       MOVEMENT
+       ===================================================== */
 
     meshRef.current.position.z +=
       delta * TARGET_SPEED;
 
-    /* Much more subtle rotation */
+    /* =====================================================
+       SUBTLE ROTATION
+       ===================================================== */
 
     meshRef.current.rotation.y =
       Math.sin(
@@ -582,26 +675,30 @@ const Target = ({
         time * 1.5 + id,
       ) * 0.025;
 
-    /* Miss */
+    /* =====================================================
+       MISS
+       ===================================================== */
 
     if (
       meshRef.current.position.z >
         10 &&
       !missedRef.current
     ) {
-      missedRef.current = true;
+      missedRef.current =
+        true;
 
       onMiss(id);
     }
   });
 
   /* =======================================================
-     READABLE TARGET SIZE
+     TARGET SIZE
      ======================================================= */
 
   const boxWidth =
     THREE.MathUtils.clamp(
-      text.length * 0.32 + 1.1,
+      text.length * 0.32 +
+        1.1,
       3.2,
       8.5,
     );
@@ -624,8 +721,9 @@ const Target = ({
 
         if (
           missedRef.current
-        )
+        ) {
           return;
+        }
 
         onHit(
           id,
@@ -639,7 +737,9 @@ const Target = ({
         setHovered(false)
       }
     >
-      {/* Target body */}
+      {/* =================================================
+          TARGET BODY
+          ================================================= */}
 
       <boxGeometry
         args={[
@@ -658,7 +758,9 @@ const Target = ({
         toneMapped={false}
       />
 
-      {/* Skill text */}
+      {/* =================================================
+          SKILL TEXT
+          ================================================= */}
 
       <Text
         position={[
@@ -690,6 +792,8 @@ const GameScene = ({
   onGameOver,
   gameKey,
   gameOver,
+  onSkillHit,
+  onSkillMiss,
 }: {
   setScore: React.Dispatch<
     React.SetStateAction<number>
@@ -700,6 +804,14 @@ const GameScene = ({
   gameKey: number;
 
   gameOver: boolean;
+
+  onSkillHit: (
+    skill: string,
+  ) => void;
+
+  onSkillMiss: (
+    skill: string,
+  ) => void;
 }) => {
   const [targets, setTargets] =
     useState<TargetData[]>([]);
@@ -708,9 +820,7 @@ const GameScene = ({
     useState<BulletData[]>([]);
 
   /* =======================================================
-     SHUFFLED SKILL QUEUE
-     
-     Every skill appears exactly once.
+     SKILL QUEUE
      ======================================================= */
 
   const skillQueueRef =
@@ -720,14 +830,8 @@ const GameScene = ({
       ),
     );
 
-  const gameStartedRef =
-    useRef(false);
-
   /* =======================================================
-     RESET GAME QUEUE
-     
-     Every time gameKey changes,
-     create a fresh shuffled list.
+     RESET GAME
      ======================================================= */
 
   useEffect(() => {
@@ -736,10 +840,8 @@ const GameScene = ({
         SKILLS_LIST,
       );
 
-    gameStartedRef.current =
-      false;
-
     setTargets([]);
+
     setBullets([]);
   }, [gameKey]);
 
@@ -747,15 +849,17 @@ const GameScene = ({
      CAMERA ASPECT
      ======================================================= */
 
-  const { size } = useThree();
+  const { size } =
+    useThree();
 
-  const aspectRef = useRef(
-    size.width /
-      Math.max(
-        size.height,
-        1,
-      ),
-  );
+  const aspectRef =
+    useRef(
+      size.width /
+        Math.max(
+          size.height,
+          1,
+        ),
+    );
 
   useEffect(() => {
     aspectRef.current =
@@ -791,7 +895,9 @@ const GameScene = ({
           return prev;
         }
 
-        /* Get next UNIQUE skill */
+        /* =================================================
+           NEXT UNIQUE SKILL
+           ================================================= */
 
         const text =
           skillQueueRef.current.shift();
@@ -825,7 +931,7 @@ const GameScene = ({
           );
 
         /* =================================================
-           FIND A SPACED POSITION
+           POSITION
            ================================================= */
 
         let x = 0;
@@ -844,13 +950,6 @@ const GameScene = ({
               0.5) *
             2 *
             xRange;
-
-          /*
-           * Safer vertical range.
-           *
-           * This keeps text away from the
-           * extreme top/bottom edges.
-           */
 
           y =
             THREE.MathUtils.lerp(
@@ -894,8 +993,9 @@ const GameScene = ({
               },
             );
 
-          if (valid)
+          if (valid) {
             break;
+          }
         }
 
         return [
@@ -922,22 +1022,16 @@ const GameScene = ({
      ======================================================= */
 
   useEffect(() => {
-    /*
-     * Start with one target.
-     * This makes the game immediately understandable.
-     */
-
     const firstSpawn =
       setTimeout(() => {
-        gameStartedRef.current =
-          true;
-
         spawnTarget();
       }, 700);
 
     const interval =
       setInterval(() => {
-        spawnTarget();
+        if (!gameOver) {
+          spawnTarget();
+        }
       }, SPAWN_INTERVAL);
 
     return () => {
@@ -952,113 +1046,207 @@ const GameScene = ({
   }, [
     spawnTarget,
     gameKey,
+    gameOver,
   ]);
 
   /* =======================================================
      HIT
      ======================================================= */
 
-  const handleHit = (
-    id: number,
-    point: THREE.Vector3,
-  ) => {
-    setScore(
-      (score) => score + 1,
-    );
+  const handleHit = useCallback(
+    (
+      id: number,
+      point: THREE.Vector3,
+    ) => {
+      const target =
+        targets.find(
+          (item) =>
+            item.id === id,
+        );
 
-    setTargets(
-      (prev) =>
-        prev.filter(
-          (target) =>
-            target.id !== id,
-        ),
-    );
+      if (!target) {
+        return;
+      }
 
-    setBullets(
-      (prev) => [
-        ...prev,
-        {
-          id:
-            Date.now() +
-            Math.random(),
+      /* =================================================
+         RECORD SKILL
+         ================================================= */
 
-          from:
-            MUZZLE_POSITION.clone(),
+      onSkillHit(
+        target.text,
+      );
 
-          to: point,
-        },
-      ],
-    );
+      /* =================================================
+         SCORE
+         ================================================= */
 
-    /*
-     * If there are no more skills waiting
-     * and this was the last visible target,
-     * the game is complete.
-     */
+      setScore(
+        (prev) =>
+          prev + 1,
+      );
 
-    if (
-      skillQueueRef.current
-        .length === 0
-    ) {
-      setTimeout(() => {
-        onGameOver();
-      }, 300);
-    }
-  };
+      /* =================================================
+         REMOVE TARGET
+         ================================================= */
+
+      const remainingTargets =
+        targets.filter(
+          (item) =>
+            item.id !== id,
+        );
+
+      setTargets(
+        remainingTargets,
+      );
+
+      /* =================================================
+         BULLET / IMPACT
+         ================================================= */
+
+      setBullets(
+        (prev) => [
+          ...prev,
+          {
+            id:
+              Date.now() +
+              Math.random(),
+
+            from:
+              MUZZLE_POSITION.clone(),
+
+            to:
+              point.clone(),
+          },
+        ],
+      );
+
+      /* =================================================
+         GAME OVER
+         
+         ONLY WHEN:
+         
+         1. No more skills are waiting to spawn
+         2. No targets remain inside the game
+         ================================================= */
+
+      if (
+        skillQueueRef.current
+          .length === 0 &&
+        remainingTargets.length ===
+          0
+      ) {
+        setTimeout(() => {
+          onGameOver();
+        }, 300);
+      }
+    },
+    [
+      targets,
+      setScore,
+      onSkillHit,
+      onGameOver,
+    ],
+  );
 
   /* =======================================================
      MISS
      ======================================================= */
 
-  const handleMiss = (
-    id: number,
-  ) => {
-    setTargets(
-      (prev) =>
-        prev.filter(
-          (target) =>
-            target.id !== id,
-        ),
+  const handleMiss =
+    useCallback(
+      (id: number) => {
+        const target =
+          targets.find(
+            (item) =>
+              item.id === id,
+          );
+
+        if (!target) {
+          return;
+        }
+
+        /* =================================================
+           RECORD SKILL
+           ================================================= */
+
+        onSkillMiss(
+          target.text,
+        );
+
+        /* =================================================
+           REMOVE TARGET
+           ================================================= */
+
+        const remainingTargets =
+          targets.filter(
+            (item) =>
+              item.id !== id,
+          );
+
+        setTargets(
+          remainingTargets,
+        );
+
+        /*
+         * Missed skills are NOT
+         * returned to the queue.
+         */
+
+        /* =================================================
+           GAME OVER
+           
+           ONLY WHEN:
+           
+           1. No more skills are waiting to spawn
+           2. No targets remain inside the game
+           ================================================= */
+
+        if (
+          skillQueueRef.current
+            .length === 0 &&
+          remainingTargets.length ===
+            0
+        ) {
+          setTimeout(() => {
+            onGameOver();
+          }, 300);
+        }
+      },
+      [
+        targets,
+        onSkillMiss,
+        onGameOver,
+      ],
     );
-
-    /*
-     * IMPORTANT:
-     *
-     * We do NOT put the missed skill
-     * back into the queue.
-     *
-     * Therefore every skill is still
-     * shown only once.
-     */
-
-    if (
-      skillQueueRef.current
-        .length === 0
-    ) {
-      setTimeout(() => {
-        onGameOver();
-      }, 300);
-    }
-  };
 
   /* =======================================================
      BULLET DONE
      ======================================================= */
 
-  const handleBulletDone = (
-    id: number,
-  ) => {
-    setBullets(
-      (prev) =>
-        prev.filter(
-          (bullet) =>
-            bullet.id !== id,
-        ),
+  const handleBulletDone =
+    useCallback(
+      (id: number) => {
+        setBullets(
+          (prev) =>
+            prev.filter(
+              (bullet) =>
+                bullet.id !== id,
+            ),
+        );
+      },
+      [],
     );
-  };
+
+  /* =======================================================
+     RENDER
+     ======================================================= */
 
   return (
     <>
+      {/* =================================================
+          FOG
+          ================================================= */}
+
       <fog
         attach="fog"
         args={[
@@ -1070,17 +1258,15 @@ const GameScene = ({
 
       {/* =================================================
           MOVING WIREFRAME
-          
-          IMPORTANT:
-          gameOver is passed here so the grid
-          freezes when the game finishes.
           ================================================= */}
 
       <MovingGrid
         gameOver={gameOver}
       />
 
-      {/* Targets */}
+      {/* =================================================
+          TARGETS
+          ================================================= */}
 
       {targets.map(
         (target) => (
@@ -1101,7 +1287,9 @@ const GameScene = ({
         ),
       )}
 
-      {/* Bullets */}
+      {/* =================================================
+          BULLETS
+          ================================================= */}
 
       {bullets.map(
         (bullet) => (
@@ -1136,6 +1324,10 @@ export default function SkillCloud({
     active: boolean,
   ) => void;
 }) {
+  /* =======================================================
+     GAME STATE
+     ======================================================= */
+
   const [score, setScore] =
     useState(0);
 
@@ -1147,6 +1339,20 @@ export default function SkillCloud({
 
   const [gameKey, setGameKey] =
     useState(0);
+
+  /* =======================================================
+     HIT / MISS STATE
+     ======================================================= */
+
+  const [hitSkills, setHitSkills] =
+    useState<string[]>([]);
+
+  const [missSkills, setMissSkills] =
+    useState<string[]>([]);
+
+  /* =======================================================
+     FLASH TIMEOUT
+     ======================================================= */
 
   const flashTimeoutRef =
     useRef<
@@ -1172,11 +1378,47 @@ export default function SkillCloud({
   }, []);
 
   /* =======================================================
+     RECORD HIT
+     ======================================================= */
+
+  const handleSkillHit =
+    useCallback(
+      (skill: string) => {
+        setHitSkills(
+          (prev) => [
+            ...prev,
+            skill,
+          ],
+        );
+      },
+      [],
+    );
+
+  /* =======================================================
+     RECORD MISS
+     ======================================================= */
+
+  const handleSkillMiss =
+    useCallback(
+      (skill: string) => {
+        setMissSkills(
+          (prev) => [
+            ...prev,
+            skill,
+          ],
+        );
+      },
+      [],
+    );
+
+  /* =======================================================
      SHOOT FLASH
      ======================================================= */
 
   const handleShoot = () => {
-    if (gameOver) return;
+    if (gameOver) {
+      return;
+    }
 
     setFlash(true);
 
@@ -1209,13 +1451,38 @@ export default function SkillCloud({
 
   const restartGame = () => {
     setScore(0);
+
     setGameOver(false);
+
     setFlash(false);
+
+    /* Clear previous results */
+
+    setHitSkills([]);
+
+    setMissSkills([]);
+
+    /* Create fresh game */
 
     setGameKey(
       (key) => key + 1,
     );
   };
+
+  /* =======================================================
+     TOTAL DISCOVERED
+     ======================================================= */
+
+  const totalDiscovered =
+    hitSkills.length +
+    missSkills.length;
+
+  const totalSkills =
+    SKILLS_LIST.length;
+
+  /* =======================================================
+     RENDER
+     ======================================================= */
 
   return (
     <div
@@ -1339,6 +1606,12 @@ export default function SkillCloud({
             }
             gameOver={
               gameOver
+            }
+            onSkillHit={
+              handleSkillHit
+            }
+            onSkillMiss={
+              handleSkillMiss
             }
           />
         </InViewCanvas>
@@ -1473,6 +1746,261 @@ export default function SkillCloud({
           ? "ALL TARGETS CLEARED"
           : "BREAK THE TARGETS!"}
       </div>
+
+      {/* ===================================================
+          SKILL RESULTS
+          =================================================== */}
+
+      <AnimatePresence>
+        {totalDiscovered > 0 && (
+          <motion.div
+            initial={{
+              opacity: 0,
+              y: 20,
+            }}
+            animate={{
+              opacity: 1,
+              y: 0,
+            }}
+            exit={{
+              opacity: 0,
+              y: 20,
+            }}
+            transition={{
+              duration: 0.3,
+            }}
+            className="
+              mt-8
+              w-full
+              border
+              border-[#1a1a1a]
+              bg-black
+              font-mono
+            "
+          >
+            {/* =================================================
+                RESULTS HEADER
+                ================================================= */}
+
+            <div
+              className="
+                flex
+                items-center
+                justify-between
+                border-b
+                border-[#1a1a1a]
+                px-4
+                py-3
+                text-[10px]
+                md:text-xs
+                tracking-[0.2em]
+                text-white
+              "
+            >
+              <span>
+                + SKILL RESULTS
+              </span>
+
+              <span className="text-[#666]">
+                {totalDiscovered} /{" "}
+                {totalSkills}
+              </span>
+            </div>
+
+            {/* =================================================
+                RESULTS GRID
+                ================================================= */}
+
+            <div
+              className="
+                grid
+                grid-cols-1
+                md:grid-cols-2
+              "
+            >
+              {/* ===============================================
+                  HIT
+                  =============================================== */}
+
+              <div
+                className="
+                  border-b
+                  md:border-b-0
+                  md:border-r
+                  border-[#1a1a1a]
+                  p-4
+                "
+              >
+                <div
+                  className="
+                    mb-4
+                    flex
+                    items-center
+                    justify-between
+                    text-[10px]
+                    md:text-xs
+                    tracking-[0.2em]
+                  "
+                >
+                  <span className="text-[#00ff33]">
+                    HIT
+                  </span>
+
+                  <span className="text-[#00ff33]">
+                    {hitSkills.length
+                      .toString()
+                      .padStart(
+                        2,
+                        "0",
+                      )}
+                  </span>
+                </div>
+
+                {hitSkills.length ===
+                0 ? (
+                  <div
+                    className="
+                      py-4
+                      text-[10px]
+                      tracking-widest
+                      text-[#444]
+                    "
+                  >
+                    NO SKILLS HIT
+                  </div>
+                ) : (
+                  <div
+                    className="
+                      flex
+                      flex-wrap
+                      gap-2
+                    "
+                  >
+                    {hitSkills.map(
+                      (
+                        skill,
+                        index,
+                      ) => (
+                        <motion.div
+                          key={`${skill}-${index}`}
+                          initial={{
+                            opacity: 0,
+                            scale: 0.9,
+                          }}
+                          animate={{
+                            opacity: 1,
+                            scale: 1,
+                          }}
+                          className="
+                            border
+                            border-[#00ff33]
+                            px-3
+                            py-2
+                            text-[9px]
+                            md:text-[10px]
+                            tracking-wider
+                            text-[#00ff33]
+                          "
+                        >
+                          {skill}
+                        </motion.div>
+                      ),
+                    )}
+                  </div>
+                )}
+              </div>
+
+              {/* ===============================================
+                  MISS
+                  =============================================== */}
+
+              <div
+                className="
+                  p-4
+                "
+              >
+                <div
+                  className="
+                    mb-4
+                    flex
+                    items-center
+                    justify-between
+                    text-[10px]
+                    md:text-xs
+                    tracking-[0.2em]
+                  "
+                >
+                  <span className="text-[#ff3333]">
+                    MISS
+                  </span>
+
+                  <span className="text-[#ff3333]">
+                    {missSkills.length
+                      .toString()
+                      .padStart(
+                        2,
+                        "0",
+                      )}
+                  </span>
+                </div>
+
+                {missSkills.length ===
+                0 ? (
+                  <div
+                    className="
+                      py-4
+                      text-[10px]
+                      tracking-widest
+                      text-[#444]
+                    "
+                  >
+                    NO SKILLS MISSED
+                  </div>
+                ) : (
+                  <div
+                    className="
+                      flex
+                      flex-wrap
+                      gap-2
+                    "
+                  >
+                    {missSkills.map(
+                      (
+                        skill,
+                        index,
+                      ) => (
+                        <motion.div
+                          key={`${skill}-${index}`}
+                          initial={{
+                            opacity: 0,
+                            scale: 0.9,
+                          }}
+                          animate={{
+                            opacity: 1,
+                            scale: 1,
+                          }}
+                          className="
+                            border
+                            border-[#ff3333]
+                            px-3
+                            py-2
+                            text-[9px]
+                            md:text-[10px]
+                            tracking-wider
+                            text-[#ff3333]
+                          "
+                        >
+                          {skill}
+                        </motion.div>
+                      ),
+                    )}
+                  </div>
+                )}
+              </div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
