@@ -89,12 +89,32 @@ const SKILLS_LIST = [
    GAME SETTINGS
    ========================================================= */
 
-const MAX_TARGETS = 5;
-const SPAWN_INTERVAL = 1400;
-const TARGET_SPEED = 12;
+const MAX_TARGETS = 6;
 
-const MIN_SPAWN_Z = -70;
-const MAX_SPAWN_Z = -55;
+/*
+ * Faster spawning keeps the scene alive.
+ */
+const SPAWN_INTERVAL = 1100;
+
+/*
+ * Target movement speed.
+ */
+const TARGET_SPEED = 14;
+
+/*
+ * Targets now start much closer to the camera.
+ *
+ * Camera is around z = 8.
+ * Targets begin around z = -48 to -38.
+ */
+const MIN_SPAWN_Z = -48;
+const MAX_SPAWN_Z = -38;
+
+/*
+ * Minimum 3D distance between targets.
+ */
+const MIN_TARGET_DISTANCE = 5;
+
 /* =========================================================
    BULLET SETTINGS
    ========================================================= */
@@ -117,11 +137,9 @@ const RING_LIFETIME = 0.24;
    GRID SETTINGS
    ========================================================= */
 
-const GRID_COUNT = 5;
-
-const GRID_SPACING = 40;
-
-const GRID_SPEED = 15;
+const GRID_COUNT = 9;
+const GRID_SPACING = 20;
+const GRID_SPEED = 10;
 
 /* =========================================================
    TYPES
@@ -180,10 +198,105 @@ const shuffleArray = <T,>(
     const temp = result[i];
 
     result[i] = result[j];
+
     result[j] = temp;
   }
 
   return result;
+};
+
+/* =========================================================
+   TUNNEL
+   ========================================================= */
+
+const Tunnel = () => {
+  const tunnelLines = useMemo(() => {
+    const lines: Array<
+      [
+        THREE.Vector3,
+        THREE.Vector3,
+      ]
+    > = [];
+
+    const width = 34;
+    const depth = 120;
+
+    /*
+     * Horizontal perspective lines.
+     */
+    for (
+      let y = -4;
+      y <= 10;
+      y += 2
+    ) {
+      lines.push([
+        new THREE.Vector3(
+          -width,
+          y,
+          4,
+        ),
+
+        new THREE.Vector3(
+          width,
+          y,
+          -depth,
+        ),
+      ]);
+    }
+
+    /*
+     * Vertical perspective lines.
+     */
+    for (
+      let x = -32;
+      x <= 32;
+      x += 4
+    ) {
+      lines.push([
+        new THREE.Vector3(
+          x,
+          -4,
+          4,
+        ),
+
+        new THREE.Vector3(
+          x * 0.7,
+          10,
+          -depth,
+        ),
+      ]);
+    }
+
+    return lines;
+  }, []);
+
+  return (
+    <group>
+      {tunnelLines.map(
+        (points, index) => {
+          const geometry =
+            new THREE.BufferGeometry().setFromPoints(
+              points,
+            );
+
+          return (
+            <line
+              key={index}
+              geometry={geometry}
+            >
+              <lineBasicMaterial
+                color={0x00ff33}
+                transparent
+                opacity={0.07}
+                depthWrite={false}
+                toneMapped={false}
+              />
+            </line>
+          );
+        },
+      )}
+    </group>
+  );
 };
 
 /* =========================================================
@@ -380,9 +493,15 @@ const Bullet = ({
     if (
       coreRef.current
     ) {
-      coreRef.current.scale.setScalar(
+      const scale =
         1.6 -
-          coreT * 1.4,
+        coreT * 1.4;
+
+      coreRef.current.scale.setScalar(
+        Math.max(
+          scale,
+          0.2,
+        ),
       );
     }
 
@@ -390,7 +509,10 @@ const Bullet = ({
       coreMatRef.current
     ) {
       coreMatRef.current.opacity =
-        1 - coreT;
+        Math.max(
+          1 - coreT,
+          0,
+        );
     }
 
     /* =======================================================
@@ -417,7 +539,10 @@ const Bullet = ({
       ringMatRef.current
     ) {
       ringMatRef.current.opacity =
-        1 - ringT;
+        Math.max(
+          1 - ringT,
+          0,
+        );
     }
 
     /* =======================================================
@@ -444,7 +569,11 @@ const Bullet = ({
         visible={false}
       >
         <sphereGeometry
-          args={[0.12, 8, 8]}
+          args={[
+            0.12,
+            8,
+            8,
+          ]}
         />
 
         <meshBasicMaterial
@@ -492,7 +621,11 @@ const Bullet = ({
         visible={false}
       >
         <sphereGeometry
-          args={[0.15, 8, 8]}
+          args={[
+            0.15,
+            8,
+            8,
+          ]}
         />
 
         <meshBasicMaterial
@@ -561,7 +694,8 @@ const MovingGrid = ({
 
     for (
       let i = 0;
-      i < gridRefs.current.length;
+      i <
+      gridRefs.current.length;
       i++
     ) {
       const grid =
@@ -575,16 +709,12 @@ const MovingGrid = ({
         delta * GRID_SPEED;
 
       /*
-       * Once a grid passes the camera,
-       * move it to the back of the tunnel.
-       *
-       * This means we NEVER allow the grid
-       * to drift infinitely.
+       * Recycle grid sections
+       * behind the tunnel.
        */
-
       if (
         grid.position.z >
-        GRID_SPACING
+        10
       ) {
         grid.position.z -=
           GRID_COUNT *
@@ -607,19 +737,20 @@ const MovingGrid = ({
           position={[
             0,
             0,
-            -GRID_SPACING * index,
+            -GRID_SPACING *
+              index,
           ]}
         >
           <gridHelper
             args={[
-              200,
-              80,
+              100,
+              40,
               0x00ff33,
               0x00ff33,
             ]}
             position={[
               0,
-              -4,
+              -3.5,
               0,
             ]}
           />
@@ -640,7 +771,10 @@ const Target = ({
   onHit,
   onMiss,
 }: TargetProps) => {
-  const meshRef =
+  const groupRef =
+    useRef<THREE.Group>(null);
+
+  const hitMeshRef =
     useRef<THREE.Mesh>(null);
 
   const [hovered, setHovered] =
@@ -657,7 +791,7 @@ const Target = ({
 
   useFrame((_, delta) => {
     if (
-      !meshRef.current
+      !groupRef.current
     ) {
       return;
     }
@@ -668,27 +802,45 @@ const Target = ({
     const time =
       timeRef.current;
 
-    /* MOVEMENT */
+    /* =======================================================
+       MOVEMENT
+       ======================================================= */
 
-    meshRef.current.position.z +=
-      delta * TARGET_SPEED;
+    groupRef.current.position.z +=
+      delta *
+      TARGET_SPEED;
 
-    /* ROTATION */
+    /* =======================================================
+       FLOATING MOTION
+       ======================================================= */
 
-    meshRef.current.rotation.y =
+    groupRef.current.position.y =
+      initialPosition[1] +
+      Math.sin(
+        time * 1.5 + id,
+      ) *
+        0.12;
+
+    /* =======================================================
+       ROTATION
+       ======================================================= */
+
+    groupRef.current.rotation.y =
       Math.sin(
         time * 1.5 + id,
       ) * 0.045;
 
-    meshRef.current.rotation.z =
+    groupRef.current.rotation.z =
       Math.cos(
         time * 1.5 + id,
       ) * 0.025;
 
-    /* MISS */
+    /* =======================================================
+       MISS
+       ======================================================= */
 
     if (
-      meshRef.current.position.z >
+      groupRef.current.position.z >
         10 &&
       !missedRef.current &&
       !hitRef.current
@@ -699,6 +851,10 @@ const Target = ({
       onMiss(id);
     }
   });
+
+  /* =========================================================
+     TARGET SIZE
+     ========================================================= */
 
   const boxWidth =
     THREE.MathUtils.clamp(
@@ -717,69 +873,160 @@ const Target = ({
           : 0.5;
 
   return (
-    <mesh
-      ref={meshRef}
+    <group
+      ref={groupRef}
       position={initialPosition}
-      onPointerDown={(event) => {
-        event.stopPropagation();
-
-        if (
-          missedRef.current ||
-          hitRef.current
-        ) {
-          return;
-        }
-
-        hitRef.current =
-          true;
-
-        onHit(
-          id,
-          event.point.clone(),
-        );
-      }}
-      onPointerOver={() =>
-        setHovered(true)
-      }
-      onPointerOut={() =>
-        setHovered(false)
-      }
     >
-      <boxGeometry
-        args={[
-          boxWidth,
-          1.35,
-          0.14,
+      {/* ===================================================
+          OUTER GLOW
+          =================================================== */}
+
+      <mesh
+        scale={[
+          1.08,
+          1.15,
+          1,
         ]}
-      />
+      >
+        <boxGeometry
+          args={[
+            boxWidth,
+            1.35,
+            0.08,
+          ]}
+        />
 
-      <meshBasicMaterial
-        color={
-          hovered
-            ? 0xffffff
-            : 0x00ff33
-        }
-        toneMapped={false}
-      />
+        <meshBasicMaterial
+          color={0x00ff33}
+          transparent
+          opacity={
+            hovered
+              ? 0.25
+              : 0.1
+          }
+          toneMapped={false}
+          blending={
+            THREE.AdditiveBlending
+          }
+          depthWrite={false}
+        />
+      </mesh>
 
-      <Text
+      {/* ===================================================
+          TARGET
+          =================================================== */}
+
+      <mesh
+        ref={hitMeshRef}
+        onPointerDown={(event) => {
+          event.stopPropagation();
+
+          if (
+            missedRef.current ||
+            hitRef.current
+          ) {
+            return;
+          }
+
+          hitRef.current =
+            true;
+
+          onHit(
+            id,
+            event.point.clone(),
+          );
+        }}
+        onPointerOver={(event) => {
+          event.stopPropagation();
+
+          setHovered(true);
+        }}
+        onPointerOut={(event) => {
+          event.stopPropagation();
+
+          setHovered(false);
+        }}
+      >
+        <boxGeometry
+          args={[
+            boxWidth,
+            1.35,
+            0.14,
+          ]}
+        />
+
+        <meshBasicMaterial
+          color={
+            hovered
+              ? 0xffffff
+              : 0x00ff33
+          }
+          toneMapped={false}
+        />
+
+        {/* =================================================
+            TEXT
+            ================================================= */}
+
+        <Text
+          position={[
+            0,
+            0,
+            0.085,
+          ]}
+          fontSize={fontSize}
+          color="#000000"
+          anchorX="center"
+          anchorY="middle"
+          maxWidth={
+            boxWidth - 0.45
+          }
+          textAlign="center"
+        >
+          {text}
+        </Text>
+      </mesh>
+
+      {/* ===================================================
+          TARGET CENTER MARK
+          =================================================== */}
+
+      <mesh
         position={[
           0,
           0,
-          0.08,
+          0.11,
         ]}
-        fontSize={fontSize}
-        color="#000000"
-        anchorX="center"
-        anchorY="middle"
-        maxWidth={
-          boxWidth - 0.45
-        }
-        textAlign="center"
+        scale={[
+          0.15,
+          0.15,
+          1,
+        ]}
       >
-        {text}
-      </Text>
-    </mesh>
+        <boxGeometry
+          args={[
+            boxWidth,
+            1.35,
+            0.02,
+          ]}
+        />
+
+        <meshBasicMaterial
+          color={0xffffff}
+          transparent
+          opacity={
+            hovered
+              ? 0.35
+              : 0.08
+          }
+          toneMapped={false}
+          blending={
+            THREE.AdditiveBlending
+          }
+          depthWrite={false}
+        />
+      </mesh>
+    </group>
   );
 };
 
@@ -837,10 +1084,7 @@ const GameScene = ({
     useRef<string[]>([]);
 
   /* =======================================================
-     TARGETS REF
-     
-     Keeps callbacks from depending on
-     stale React state.
+     TARGET REF
      ======================================================= */
 
   const targetsRef =
@@ -879,7 +1123,7 @@ const GameScene = ({
   }, [gameKey]);
 
   /* =======================================================
-     CAMERA
+     CAMERA / ASPECT
      ======================================================= */
 
   const { size } =
@@ -952,14 +1196,6 @@ const GameScene = ({
 
   /* =======================================================
      SPAWN TARGET
-     
-     IMPORTANT:
-     
-     The queue is modified OUTSIDE the
-     React setState updater.
-     
-     This prevents React Strict Mode from
-     consuming skills twice.
      ======================================================= */
 
   const spawnTarget =
@@ -986,9 +1222,9 @@ const GameScene = ({
         return;
       }
 
-      /* -----------------------------------------------
-         TAKE EXACTLY ONE SKILL
-         ----------------------------------------------- */
+      /* =====================================================
+         TAKE ONE SKILL
+         ===================================================== */
 
       const text =
         skillQueueRef.current.shift();
@@ -997,32 +1233,40 @@ const GameScene = ({
         return;
       }
 
-      /* -----------------------------------------------
-         VISIBLE WIDTH
-         ----------------------------------------------- */
+      /* =====================================================
+         CAMERA WIDTH CALCULATION
+         ===================================================== */
 
-      const REFERENCE_DISTANCE =
-        25;
+      /*
+       * Use the actual spawn distance.
+       *
+       * This prevents targets from being
+       * randomly placed outside the viewport.
+       */
 
-      const HALF_FOV =
+      const referenceDistance = 43;
+
+      const halfFov =
         THREE.MathUtils.degToRad(
-          25,
+          55 / 2,
         );
 
       const visibleHalfWidth =
-        REFERENCE_DISTANCE *
-        Math.tan(HALF_FOV) *
+        referenceDistance *
+        Math.tan(
+          halfFov,
+        ) *
         aspectRef.current;
 
       const xRange =
         Math.max(
-          visibleHalfWidth * 0.72,
-          4,
+          visibleHalfWidth * 0.55,
+          3.5,
         );
 
-      /* -----------------------------------------------
+      /* =====================================================
          POSITION
-         ----------------------------------------------- */
+         ===================================================== */
 
       let x = 0;
       let y = 0;
@@ -1095,6 +1339,10 @@ const GameScene = ({
         }
       }
 
+      /* =====================================================
+         NEW TARGET
+         ===================================================== */
+
       const newTarget: TargetData =
         {
           id:
@@ -1109,9 +1357,9 @@ const GameScene = ({
           ],
         };
 
-      /* -----------------------------------------------
+      /* =====================================================
          UPDATE REF FIRST
-         ----------------------------------------------- */
+         ===================================================== */
 
       const nextTargets = [
         ...targetsRef.current,
@@ -1121,9 +1369,9 @@ const GameScene = ({
       targetsRef.current =
         nextTargets;
 
-      /* -----------------------------------------------
-         THEN UPDATE REACT STATE
-         ----------------------------------------------- */
+      /* =====================================================
+         UPDATE REACT
+         ===================================================== */
 
       setTargets(
         nextTargets,
@@ -1142,10 +1390,17 @@ const GameScene = ({
       return;
     }
 
+    /*
+     * Spawn two immediately.
+     *
+     * This prevents the black/empty initial state.
+     */
+
     const firstSpawn =
       window.setTimeout(() => {
         spawnTarget();
-      }, 700);
+        spawnTarget();
+      }, 250);
 
     const interval =
       window.setInterval(() => {
@@ -1187,26 +1442,26 @@ const GameScene = ({
           return;
         }
 
-        /* -----------------------------------------------
-           RECORD
-           ----------------------------------------------- */
+        /* ===================================================
+           RECORD HIT
+           =================================================== */
 
         onSkillHit(
           target.text,
         );
 
-        /* -----------------------------------------------
+        /* ===================================================
            SCORE
-           ----------------------------------------------- */
+           =================================================== */
 
         setScore(
           (previous) =>
             previous + 1,
         );
 
-        /* -----------------------------------------------
+        /* ===================================================
            REMOVE TARGET
-           ----------------------------------------------- */
+           =================================================== */
 
         const remainingTargets =
           targetsRef.current.filter(
@@ -1221,11 +1476,9 @@ const GameScene = ({
           remainingTargets,
         );
 
-        /* -----------------------------------------------
+        /* ===================================================
            BULLET
-           
-           Numeric ID guaranteed.
-           ----------------------------------------------- */
+           =================================================== */
 
         const bulletId =
           nextBulletId.current++;
@@ -1248,9 +1501,9 @@ const GameScene = ({
           ],
         );
 
-        /* -----------------------------------------------
+        /* ===================================================
            COMPLETION
-           ----------------------------------------------- */
+           =================================================== */
 
         checkGameComplete(
           remainingTargets,
@@ -1280,17 +1533,17 @@ const GameScene = ({
           return;
         }
 
-        /* -----------------------------------------------
-           RECORD
-           ----------------------------------------------- */
+        /* ===================================================
+           RECORD MISS
+           =================================================== */
 
         onSkillMiss(
           target.text,
         );
 
-        /* -----------------------------------------------
-           REMOVE
-           ----------------------------------------------- */
+        /* ===================================================
+           REMOVE TARGET
+           =================================================== */
 
         const remainingTargets =
           targetsRef.current.filter(
@@ -1305,9 +1558,9 @@ const GameScene = ({
           remainingTargets,
         );
 
-        /* -----------------------------------------------
+        /* ===================================================
            COMPLETION
-           ----------------------------------------------- */
+           =================================================== */
 
         checkGameComplete(
           remainingTargets,
@@ -1343,20 +1596,36 @@ const GameScene = ({
 
   return (
     <>
-      {/* FOG */}
+      {/* ===================================================
+          FOG
+          =================================================== */}
 
-     <fog
+      <fog
         attach="fog"
-        args={["#000000", 60, 250]}
-     />
+        args={[
+          "#000000",
+          25,
+          100,
+        ]}
+      />
 
-      {/* GRID */}
+      {/* ===================================================
+          TUNNEL
+          =================================================== */}
+
+      <Tunnel />
+
+      {/* ===================================================
+          MOVING GRID
+          =================================================== */}
 
       <MovingGrid
         gameOver={gameOver}
       />
 
-      {/* TARGETS */}
+      {/* ===================================================
+          TARGETS
+          =================================================== */}
 
       {targets.map(
         (target) => (
@@ -1377,7 +1646,9 @@ const GameScene = ({
         ),
       )}
 
-      {/* BULLETS */}
+      {/* ===================================================
+          BULLETS
+          =================================================== */}
 
       {bullets.map(
         (bullet) => (
@@ -1533,14 +1804,6 @@ export default function SkillCloud({
     useCallback(() => {
       setGameOver(true);
 
-      /*
-       * VERY IMPORTANT:
-       *
-       * Immediately release game cursor.
-       *
-       * Skill Results never call onGameHover.
-       */
-
       onGameHover(false);
     }, [
       onGameHover,
@@ -1562,18 +1825,10 @@ export default function SkillCloud({
 
       setMissSkills([]);
 
-      /*
-       * Completely remount GameScene.
-       */
-
       setGameKey(
         (previous) =>
           previous + 1,
       );
-
-      /*
-       * Immediately restore normal cursor.
-       */
 
       onGameHover(false);
     }, [
@@ -1634,8 +1889,6 @@ export default function SkillCloud({
 
       {/* ===================================================
           GAME WINDOW
-          
-          ONLY THIS ELEMENT controls game cursor mode.
           =================================================== */}
 
       <div
@@ -1657,7 +1910,9 @@ export default function SkillCloud({
           overflow-hidden
         "
       >
-        {/* FLASH */}
+        {/* =================================================
+            SHOOT FLASH
+            ================================================= */}
 
         <AnimatePresence>
           {flash &&
@@ -1683,23 +1938,27 @@ export default function SkillCloud({
             )}
         </AnimatePresence>
 
-        {/* CANVAS */}
+        {/* =================================================
+            CANVAS
+            ================================================= */}
 
         <InViewCanvas
           camera={{
             position: [
               0,
-              0,
+              1,
               8,
             ],
-            fov: 50,
+            fov: 55,
+            near: 0.1,
+            far: 150,
           }}
           dpr={[
             1,
             1.5,
           ]}
           gl={{
-            antialias: false,
+            antialias: true,
             powerPreference:
               "high-performance",
           }}
@@ -1859,11 +2118,6 @@ export default function SkillCloud({
 
       {/* ===================================================
           SKILL RESULTS
-          
-          NO onMouseEnter / onMouseLeave HERE.
-          
-          Therefore this section NEVER activates the
-          game cursor.
           =================================================== */}
 
       <AnimatePresence>
