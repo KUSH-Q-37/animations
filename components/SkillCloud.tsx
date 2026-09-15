@@ -29,62 +29,61 @@ import InViewCanvas from "@/components/InViewCanvas";
    ========================================================= */
 
 const SKILLS_LIST = [
-  // Languages
-  "TypeScript",
-  "JavaScript",
-  "Python",
-  "Java",
+  // LANGUAGES
+  "TYPESCRIPT",
+  "JAVASCRIPT",
+  "PYTHON",
+  "JAVA",
   "SQL",
 
-  // Frontend & Motion
-  "React.js",
-  "Next.js",
-  "App Router",
-  "Tailwind CSS",
+  // FRONTEND & MOTION
+  "REACT.JS",
+  "NEXT.JS",
+  "APP ROUTER",
+  "TAILWIND CSS",
   "GSAP",
-  "Lenis",
-  "WebGL",
-  "Three.js",
-  "Framer Motion",
+  "LENIS",
+  "WEBGL",
+  "THREE.JS",
+  "FRAMER MOTION",
 
-  // Backend & Architecture
-  "Node.js",
-  "NestJS",
-  "Express.js",
-  "Flask",
-  "BullMQ",
-  "REST APIs",
-  "Turborepo",
+  // BACKEND & ARCHITECTURE
+  "NODE.JS",
+  "NEST.JS",
+  "EXPRESS.JS",
+  "FLASK",
+  "BULLMQ",
+  "REST APIS",
+  "TURBOREPO",
 
-  // Databases & Cloud
-  "PostgreSQL",
-  "Redis",
-  "MongoDB",
-  "MySQL",
-  "Prisma ORM",
-  "Docker",
-  "GitHub Actions",
-  "Vercel",
+  // DATABASES & CLOUD
+  "POSTGRESQL",
+  "REDIS",
+  "MONGODB",
+  "MYSQL",
+  "PRISMA ORM",
+  "DOCKER",
+  "GITHUB ACTIONS",
+  "VERCEL",
 
-  // AI & Semantic Search
-  "Vector Embeddings",
-  "pgvector",
-  "HNSW Indexes",
-  "Deep Learning",
+  // AI & SEMANTIC SEARCH
+  "VECTOR EMBEDDINGS",
+  "PGVECTOR",
+  "HNSW INDEXES",
+  "DEEP LEARNING",
   "LSTM",
-  "Time-Series Forecasting",
+  "TIME-SERIES FORECASTING",
 
-  // Data Science & Testing
-  "Pandas",
-  "NumPy",
-  "Scikit-learn",
-  "Matplotlib",
-  "Playwright",
-  "E2E Testing",
-  "Jest",
-  "Figma",
+  // DATA SCIENCE & TESTING
+  "PANDAS",
+  "NUMPY",
+  "SCIKIT-LEARN",
+  "MATPLOTLIB",
+  "PLAYWRIGHT",
+  "E2E TESTING",
+  "JEST",
+  "FIGMA",
 ];
-
 /* =========================================================
    GAME SETTINGS
    ========================================================= */
