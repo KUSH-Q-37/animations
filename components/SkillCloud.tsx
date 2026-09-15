@@ -8,11 +8,7 @@ import {
   useCallback,
 } from "react";
 
-import {
-  useFrame,
-  useThree,
-} from "@react-three/fiber";
-
+import { useFrame, useThree } from "@react-three/fiber";
 import { Text } from "@react-three/drei";
 
 import {
@@ -89,29 +85,21 @@ const SKILLS_LIST = [
    GAME SETTINGS
    ========================================================= */
 
-const MAX_TARGETS = 6;
+const MAX_TARGETS = 5;
+
+const SPAWN_INTERVAL = 1400;
+
+const FIRST_SPAWN_DELAY = 500;
+
+const TARGET_SPEED = 12;
+
+const MIN_SPAWN_Z = -70;
+
+const MAX_SPAWN_Z = -55;
 
 /*
- * Faster spawning keeps the scene alive.
- */
-const SPAWN_INTERVAL = 1100;
-
-/*
- * Target movement speed.
- */
-const TARGET_SPEED = 14;
-
-/*
- * Targets now start much closer to the camera.
- *
- * Camera is around z = 8.
- * Targets begin around z = -48 to -38.
- */
-const MIN_SPAWN_Z = -48;
-const MAX_SPAWN_Z = -38;
-
-/*
- * Minimum 3D distance between targets.
+ * IMPORTANT:
+ * This was missing in your previous code.
  */
 const MIN_TARGET_DISTANCE = 5;
 
@@ -128,18 +116,22 @@ const MUZZLE_POSITION = new THREE.Vector3(
 const BULLET_SPEED = 70;
 
 const MIN_TRAVEL_TIME = 0.05;
+
 const MAX_TRAVEL_TIME = 0.22;
 
 const CORE_LIFETIME = 0.1;
+
 const RING_LIFETIME = 0.24;
 
 /* =========================================================
    GRID SETTINGS
    ========================================================= */
 
-const GRID_COUNT = 9;
-const GRID_SPACING = 20;
-const GRID_SPEED = 10;
+const GRID_COUNT = 5;
+
+const GRID_SPACING = 40;
+
+const GRID_SPEED = 15;
 
 /* =========================================================
    TYPES
@@ -195,108 +187,16 @@ const shuffleArray = <T,>(
       Math.random() * (i + 1),
     );
 
-    const temp = result[i];
-
-    result[i] = result[j];
-
-    result[j] = temp;
+    [
+      result[i],
+      result[j],
+    ] = [
+      result[j],
+      result[i],
+    ];
   }
 
   return result;
-};
-
-/* =========================================================
-   TUNNEL
-   ========================================================= */
-
-const Tunnel = () => {
-  const tunnelLines = useMemo(() => {
-    const lines: Array<
-      [
-        THREE.Vector3,
-        THREE.Vector3,
-      ]
-    > = [];
-
-    const width = 34;
-    const depth = 120;
-
-    /*
-     * Horizontal perspective lines.
-     */
-    for (
-      let y = -4;
-      y <= 10;
-      y += 2
-    ) {
-      lines.push([
-        new THREE.Vector3(
-          -width,
-          y,
-          4,
-        ),
-
-        new THREE.Vector3(
-          width,
-          y,
-          -depth,
-        ),
-      ]);
-    }
-
-    /*
-     * Vertical perspective lines.
-     */
-    for (
-      let x = -32;
-      x <= 32;
-      x += 4
-    ) {
-      lines.push([
-        new THREE.Vector3(
-          x,
-          -4,
-          4,
-        ),
-
-        new THREE.Vector3(
-          x * 0.7,
-          10,
-          -depth,
-        ),
-      ]);
-    }
-
-    return lines;
-  }, []);
-
-  return (
-    <group>
-      {tunnelLines.map(
-        (points, index) => {
-          const geometry =
-            new THREE.BufferGeometry().setFromPoints(
-              points,
-            );
-
-          return (
-            <line
-              key={index}
-              geometry={geometry}
-            >
-              <lineBasicMaterial
-                color={0x00ff33}
-                transparent
-                opacity={0.07}
-                depthWrite={false}
-                toneMapped={false}
-              />
-            </line>
-          );
-        },
-      )}
-    </group>
-  );
 };
 
 /* =========================================================
@@ -330,7 +230,7 @@ const Bullet = ({
   const ringMatRef =
     useRef<THREE.MeshBasicMaterial>(null);
 
-  const elapsed =
+  const elapsedRef =
     useRef(0);
 
   const doneRef =
@@ -342,7 +242,7 @@ const Bullet = ({
     travelTime,
     streakLength,
   } = useMemo(() => {
-    const dir =
+    const directionVector =
       new THREE.Vector3().subVectors(
         to,
         from,
@@ -350,14 +250,16 @@ const Bullet = ({
 
     const distance =
       Math.max(
-        dir.length(),
+        directionVector.length(),
         0.001,
       );
 
     const normalizedDirection =
-      dir.clone().normalize();
+      directionVector
+        .clone()
+        .normalize();
 
-    const quat =
+    const quaternionValue =
       new THREE.Quaternion().setFromUnitVectors(
         new THREE.Vector3(0, 1, 0),
         normalizedDirection,
@@ -375,7 +277,7 @@ const Bullet = ({
         normalizedDirection,
 
       quaternion:
-        quat,
+        quaternionValue,
 
       travelTime:
         calculatedTravelTime,
@@ -388,19 +290,44 @@ const Bullet = ({
     };
   }, [from, to]);
 
+  useEffect(() => {
+    elapsedRef.current = 0;
+    doneRef.current = false;
+
+    if (coreRef.current) {
+      coreRef.current.visible = false;
+      coreRef.current.scale.setScalar(1);
+    }
+
+    if (ringRef.current) {
+      ringRef.current.visible = false;
+      ringRef.current.scale.setScalar(1);
+    }
+
+    if (coreMatRef.current) {
+      coreMatRef.current.opacity = 1;
+    }
+
+    if (ringMatRef.current) {
+      ringMatRef.current.opacity = 1;
+    }
+  }, []);
+
   useFrame((_, delta) => {
-    elapsed.current += delta;
+    if (doneRef.current) {
+      return;
+    }
+
+    elapsedRef.current += delta;
 
     const time =
-      elapsed.current;
+      elapsedRef.current;
 
-    /* =======================================================
+    /* =====================================================
        FLIGHT
-       ======================================================= */
+       ===================================================== */
 
-    if (
-      time < travelTime
-    ) {
+    if (time < travelTime) {
       const travelT =
         time / travelTime;
 
@@ -412,9 +339,7 @@ const Bullet = ({
             travelT,
           );
 
-      if (
-        bulletRef.current
-      ) {
+      if (bulletRef.current) {
         bulletRef.current.visible =
           true;
 
@@ -423,9 +348,7 @@ const Bullet = ({
         );
       }
 
-      if (
-        streakRef.current
-      ) {
+      if (streakRef.current) {
         streakRef.current.visible =
           true;
 
@@ -444,44 +367,44 @@ const Bullet = ({
       return;
     }
 
-    /* =======================================================
+    /* =====================================================
        IMPACT
-       ======================================================= */
+       ===================================================== */
 
-    if (
-      bulletRef.current
-    ) {
+    if (bulletRef.current) {
       bulletRef.current.visible =
         false;
     }
 
-    if (
-      streakRef.current
-    ) {
+    if (streakRef.current) {
       streakRef.current.visible =
         false;
     }
 
-    if (
-      coreRef.current
-    ) {
+    if (coreRef.current) {
       coreRef.current.visible =
         true;
+
+      coreRef.current.position.copy(
+        to,
+      );
     }
 
-    if (
-      ringRef.current
-    ) {
+    if (ringRef.current) {
       ringRef.current.visible =
         true;
+
+      ringRef.current.position.copy(
+        to,
+      );
     }
 
     const impactTime =
       time - travelTime;
 
-    /* =======================================================
+    /* =====================================================
        CORE
-       ======================================================= */
+       ===================================================== */
 
     const coreT =
       Math.min(
@@ -490,34 +413,21 @@ const Bullet = ({
         1,
       );
 
-    if (
-      coreRef.current
-    ) {
-      const scale =
-        1.6 -
-        coreT * 1.4;
-
+    if (coreRef.current) {
       coreRef.current.scale.setScalar(
-        Math.max(
-          scale,
-          0.2,
-        ),
+        1.6 -
+          coreT * 1.4,
       );
     }
 
-    if (
-      coreMatRef.current
-    ) {
+    if (coreMatRef.current) {
       coreMatRef.current.opacity =
-        Math.max(
-          1 - coreT,
-          0,
-        );
+        1 - coreT;
     }
 
-    /* =======================================================
+    /* =====================================================
        RING
-       ======================================================= */
+       ===================================================== */
 
     const ringT =
       Math.min(
@@ -526,33 +436,25 @@ const Bullet = ({
         1,
       );
 
-    if (
-      ringRef.current
-    ) {
+    if (ringRef.current) {
       ringRef.current.scale.setScalar(
         0.3 +
           ringT * 1.5,
       );
     }
 
-    if (
-      ringMatRef.current
-    ) {
+    if (ringMatRef.current) {
       ringMatRef.current.opacity =
-        Math.max(
-          1 - ringT,
-          0,
-        );
+        1 - ringT;
     }
 
-    /* =======================================================
+    /* =====================================================
        CLEANUP
-       ======================================================= */
+       ===================================================== */
 
     if (
       impactTime >=
-        RING_LIFETIME &&
-      !doneRef.current
+        RING_LIFETIME
     ) {
       doneRef.current = true;
 
@@ -694,8 +596,7 @@ const MovingGrid = ({
 
     for (
       let i = 0;
-      i <
-      gridRefs.current.length;
+      i < gridRefs.current.length;
       i++
     ) {
       const grid =
@@ -708,13 +609,9 @@ const MovingGrid = ({
       grid.position.z +=
         delta * GRID_SPEED;
 
-      /*
-       * Recycle grid sections
-       * behind the tunnel.
-       */
       if (
         grid.position.z >
-        10
+        GRID_SPACING
       ) {
         grid.position.z -=
           GRID_COUNT *
@@ -737,20 +634,19 @@ const MovingGrid = ({
           position={[
             0,
             0,
-            -GRID_SPACING *
-              index,
+            -GRID_SPACING * index,
           ]}
         >
           <gridHelper
             args={[
-              100,
-              40,
+              200,
+              80,
               0x00ff33,
               0x00ff33,
             ]}
             position={[
               0,
-              -3.5,
+              -4,
               0,
             ]}
           />
@@ -771,10 +667,7 @@ const Target = ({
   onHit,
   onMiss,
 }: TargetProps) => {
-  const groupRef =
-    useRef<THREE.Group>(null);
-
-  const hitMeshRef =
+  const meshRef =
     useRef<THREE.Mesh>(null);
 
   const [hovered, setHovered] =
@@ -789,61 +682,59 @@ const Target = ({
   const hitRef =
     useRef(false);
 
+  useEffect(() => {
+    timeRef.current = 0;
+    missedRef.current = false;
+    hitRef.current = false;
+  }, [id]);
+
   useFrame((_, delta) => {
+    const mesh =
+      meshRef.current;
+
+    if (!mesh) {
+      return;
+    }
+
     if (
-      !groupRef.current
+      missedRef.current ||
+      hitRef.current
     ) {
       return;
     }
 
-    timeRef.current +=
-      delta;
+    timeRef.current += delta;
 
     const time =
       timeRef.current;
 
-    /* =======================================================
-       MOVEMENT
-       ======================================================= */
+    /* =====================================================
+       MOVE TOWARD CAMERA
+       ===================================================== */
 
-    groupRef.current.position.z +=
-      delta *
-      TARGET_SPEED;
+    mesh.position.z +=
+      delta * TARGET_SPEED;
 
-    /* =======================================================
-       FLOATING MOTION
-       ======================================================= */
+    /* =====================================================
+       SUBTLE MOVEMENT
+       ===================================================== */
 
-    groupRef.current.position.y =
-      initialPosition[1] +
-      Math.sin(
-        time * 1.5 + id,
-      ) *
-        0.12;
-
-    /* =======================================================
-       ROTATION
-       ======================================================= */
-
-    groupRef.current.rotation.y =
+    mesh.rotation.y =
       Math.sin(
         time * 1.5 + id,
       ) * 0.045;
 
-    groupRef.current.rotation.z =
+    mesh.rotation.z =
       Math.cos(
         time * 1.5 + id,
       ) * 0.025;
 
-    /* =======================================================
+    /* =====================================================
        MISS
-       ======================================================= */
+       ===================================================== */
 
     if (
-      groupRef.current.position.z >
-        10 &&
-      !missedRef.current &&
-      !hitRef.current
+      mesh.position.z > 10
     ) {
       missedRef.current =
         true;
@@ -851,10 +742,6 @@ const Target = ({
       onMiss(id);
     }
   });
-
-  /* =========================================================
-     TARGET SIZE
-     ========================================================= */
 
   const boxWidth =
     THREE.MathUtils.clamp(
@@ -873,160 +760,70 @@ const Target = ({
           : 0.5;
 
   return (
-    <group
-      ref={groupRef}
+    <mesh
+      ref={meshRef}
       position={initialPosition}
+      onPointerDown={(event) => {
+        event.stopPropagation();
+
+        if (
+          missedRef.current ||
+          hitRef.current
+        ) {
+          return;
+        }
+
+        hitRef.current =
+          true;
+
+        onHit(
+          id,
+          event.point.clone(),
+        );
+      }}
+      onPointerOver={(event) => {
+        event.stopPropagation();
+        setHovered(true);
+      }}
+      onPointerOut={() => {
+        setHovered(false);
+      }}
     >
-      {/* ===================================================
-          OUTER GLOW
-          =================================================== */}
-
-      <mesh
-        scale={[
-          1.08,
-          1.15,
-          1,
+      <boxGeometry
+        args={[
+          boxWidth,
+          1.35,
+          0.14,
         ]}
-      >
-        <boxGeometry
-          args={[
-            boxWidth,
-            1.35,
-            0.08,
-          ]}
-        />
+      />
 
-        <meshBasicMaterial
-          color={0x00ff33}
-          transparent
-          opacity={
-            hovered
-              ? 0.25
-              : 0.1
-          }
-          toneMapped={false}
-          blending={
-            THREE.AdditiveBlending
-          }
-          depthWrite={false}
-        />
-      </mesh>
+      <meshBasicMaterial
+        color={
+          hovered
+            ? 0xffffff
+            : 0x00ff33
+        }
+        toneMapped={false}
+      />
 
-      {/* ===================================================
-          TARGET
-          =================================================== */}
-
-      <mesh
-        ref={hitMeshRef}
-        onPointerDown={(event) => {
-          event.stopPropagation();
-
-          if (
-            missedRef.current ||
-            hitRef.current
-          ) {
-            return;
-          }
-
-          hitRef.current =
-            true;
-
-          onHit(
-            id,
-            event.point.clone(),
-          );
-        }}
-        onPointerOver={(event) => {
-          event.stopPropagation();
-
-          setHovered(true);
-        }}
-        onPointerOut={(event) => {
-          event.stopPropagation();
-
-          setHovered(false);
-        }}
-      >
-        <boxGeometry
-          args={[
-            boxWidth,
-            1.35,
-            0.14,
-          ]}
-        />
-
-        <meshBasicMaterial
-          color={
-            hovered
-              ? 0xffffff
-              : 0x00ff33
-          }
-          toneMapped={false}
-        />
-
-        {/* =================================================
-            TEXT
-            ================================================= */}
-
-        <Text
-          position={[
-            0,
-            0,
-            0.085,
-          ]}
-          fontSize={fontSize}
-          color="#000000"
-          anchorX="center"
-          anchorY="middle"
-          maxWidth={
-            boxWidth - 0.45
-          }
-          textAlign="center"
-        >
-          {text}
-        </Text>
-      </mesh>
-
-      {/* ===================================================
-          TARGET CENTER MARK
-          =================================================== */}
-
-      <mesh
+      <Text
         position={[
           0,
           0,
-          0.11,
+          0.08,
         ]}
-        scale={[
-          0.15,
-          0.15,
-          1,
-        ]}
+        fontSize={fontSize}
+        color="#000000"
+        anchorX="center"
+        anchorY="middle"
+        maxWidth={
+          boxWidth - 0.45
+        }
+        textAlign="center"
       >
-        <boxGeometry
-          args={[
-            boxWidth,
-            1.35,
-            0.02,
-          ]}
-        />
-
-        <meshBasicMaterial
-          color={0xffffff}
-          transparent
-          opacity={
-            hovered
-              ? 0.35
-              : 0.08
-          }
-          toneMapped={false}
-          blending={
-            THREE.AdditiveBlending
-          }
-          depthWrite={false}
-        />
-      </mesh>
-    </group>
+        {text}
+      </Text>
+    </mesh>
   );
 };
 
@@ -1084,19 +881,52 @@ const GameScene = ({
     useRef<string[]>([]);
 
   /* =======================================================
-     TARGET REF
+     TARGETS REF
      ======================================================= */
 
   const targetsRef =
     useRef<TargetData[]>([]);
 
+  /* =======================================================
+     CAMERA / VIEWPORT
+     ======================================================= */
+
+  const { size } =
+    useThree();
+
+  const aspectRef =
+    useRef(1);
+
   useEffect(() => {
-    targetsRef.current =
-      targets;
-  }, [targets]);
+    aspectRef.current =
+      size.width /
+      Math.max(
+        size.height,
+        1,
+      );
+  }, [size]);
 
   /* =======================================================
-     RESET GAME
+     GAME COMPLETE GUARD
+     ======================================================= */
+
+  const gameOverTriggeredRef =
+    useRef(false);
+
+  useEffect(() => {
+    gameOverTriggeredRef.current =
+      false;
+  }, [gameKey]);
+
+  useEffect(() => {
+    if (!gameOver) {
+      gameOverTriggeredRef.current =
+        false;
+    }
+  }, [gameOver]);
+
+  /* =======================================================
+     RESET
      ======================================================= */
 
   useEffect(() => {
@@ -1123,46 +953,16 @@ const GameScene = ({
   }, [gameKey]);
 
   /* =======================================================
-     CAMERA / ASPECT
+     SYNC TARGET REF
      ======================================================= */
 
-  const { size } =
-    useThree();
-
-  const aspectRef =
-    useRef(
-      size.width /
-        Math.max(
-          size.height,
-          1,
-        ),
-    );
-
   useEffect(() => {
-    aspectRef.current =
-      size.width /
-      Math.max(
-        size.height,
-        1,
-      );
-  }, [size]);
+    targetsRef.current =
+      targets;
+  }, [targets]);
 
   /* =======================================================
-     GAME OVER GUARD
-     ======================================================= */
-
-  const gameOverTriggeredRef =
-    useRef(false);
-
-  useEffect(() => {
-    if (!gameOver) {
-      gameOverTriggeredRef.current =
-        false;
-    }
-  }, [gameOver]);
-
-  /* =======================================================
-     CHECK COMPLETION
+     COMPLETE
      ======================================================= */
 
   const checkGameComplete =
@@ -1222,10 +1022,6 @@ const GameScene = ({
         return;
       }
 
-      /* =====================================================
-         TAKE ONE SKILL
-         ===================================================== */
-
       const text =
         skillQueueRef.current.shift();
 
@@ -1233,40 +1029,36 @@ const GameScene = ({
         return;
       }
 
-      /* =====================================================
-         CAMERA WIDTH CALCULATION
-         ===================================================== */
+      /* ===================================================
+         CAMERA-AWARE X RANGE
+         =================================================== */
 
-      /*
-       * Use the actual spawn distance.
-       *
-       * This prevents targets from being
-       * randomly placed outside the viewport.
-       */
-
-      const referenceDistance = 43;
+      const referenceDistance =
+        25;
 
       const halfFov =
         THREE.MathUtils.degToRad(
-          55 / 2,
+          25,
         );
 
       const visibleHalfWidth =
         referenceDistance *
-        Math.tan(
-          halfFov,
-        ) *
-        aspectRef.current;
-
-      const xRange =
+        Math.tan(halfFov) *
         Math.max(
-          visibleHalfWidth * 0.55,
-          3.5,
+          aspectRef.current,
+          0.75,
         );
 
-      /* =====================================================
-         POSITION
-         ===================================================== */
+      const xRange =
+        THREE.MathUtils.clamp(
+          visibleHalfWidth * 0.65,
+          4,
+          14,
+        );
+
+      /* ===================================================
+         FIND NON-OVERLAPPING POSITION
+         =================================================== */
 
       let x = 0;
       let y = 0;
@@ -1280,7 +1072,7 @@ const GameScene = ({
 
       for (
         let attempt = 0;
-        attempt < 50;
+        attempt < 60;
         attempt++
       ) {
         x =
@@ -1291,17 +1083,16 @@ const GameScene = ({
         y =
           THREE.MathUtils.lerp(
             -0.5,
-            7,
+            6.5,
             Math.random(),
           );
 
         z =
-          MIN_SPAWN_Z +
-          Math.random() *
-            (
-              MAX_SPAWN_Z -
-              MIN_SPAWN_Z
-            );
+          THREE.MathUtils.lerp(
+            MIN_SPAWN_Z,
+            MAX_SPAWN_Z,
+            Math.random(),
+          );
 
         validPosition =
           currentTargets.every(
@@ -1332,16 +1123,10 @@ const GameScene = ({
             },
           );
 
-        if (
-          validPosition
-        ) {
+        if (validPosition) {
           break;
         }
       }
-
-      /* =====================================================
-         NEW TARGET
-         ===================================================== */
 
       const newTarget: TargetData =
         {
@@ -1357,9 +1142,9 @@ const GameScene = ({
           ],
         };
 
-      /* =====================================================
-         UPDATE REF FIRST
-         ===================================================== */
+      /* ===================================================
+         UPDATE REF IMMEDIATELY
+         =================================================== */
 
       const nextTargets = [
         ...targetsRef.current,
@@ -1369,9 +1154,9 @@ const GameScene = ({
       targetsRef.current =
         nextTargets;
 
-      /* =====================================================
+      /* ===================================================
          UPDATE REACT
-         ===================================================== */
+         =================================================== */
 
       setTargets(
         nextTargets,
@@ -1390,24 +1175,25 @@ const GameScene = ({
       return;
     }
 
-    /*
-     * Spawn two immediately.
-     *
-     * This prevents the black/empty initial state.
-     */
+    let cancelled = false;
 
     const firstSpawn =
       window.setTimeout(() => {
-        spawnTarget();
-        spawnTarget();
-      }, 250);
+        if (!cancelled) {
+          spawnTarget();
+        }
+      }, FIRST_SPAWN_DELAY);
 
     const interval =
       window.setInterval(() => {
-        spawnTarget();
+        if (!cancelled) {
+          spawnTarget();
+        }
       }, SPAWN_INTERVAL);
 
     return () => {
+      cancelled = true;
+
       window.clearTimeout(
         firstSpawn,
       );
@@ -1442,26 +1228,20 @@ const GameScene = ({
           return;
         }
 
-        /* ===================================================
-           RECORD HIT
-           =================================================== */
+        /* RECORD */
 
         onSkillHit(
           target.text,
         );
 
-        /* ===================================================
-           SCORE
-           =================================================== */
+        /* SCORE */
 
         setScore(
           (previous) =>
             previous + 1,
         );
 
-        /* ===================================================
-           REMOVE TARGET
-           =================================================== */
+        /* REMOVE */
 
         const remainingTargets =
           targetsRef.current.filter(
@@ -1476,9 +1256,7 @@ const GameScene = ({
           remainingTargets,
         );
 
-        /* ===================================================
-           BULLET
-           =================================================== */
+        /* BULLET */
 
         const bulletId =
           nextBulletId.current++;
@@ -1495,15 +1273,13 @@ const GameScene = ({
           };
 
         setBullets(
-          (previousBullets) => [
-            ...previousBullets,
+          (previous) => [
+            ...previous,
             bullet,
           ],
         );
 
-        /* ===================================================
-           COMPLETION
-           =================================================== */
+        /* COMPLETE */
 
         checkGameComplete(
           remainingTargets,
@@ -1533,17 +1309,13 @@ const GameScene = ({
           return;
         }
 
-        /* ===================================================
-           RECORD MISS
-           =================================================== */
+        /* RECORD */
 
         onSkillMiss(
           target.text,
         );
 
-        /* ===================================================
-           REMOVE TARGET
-           =================================================== */
+        /* REMOVE */
 
         const remainingTargets =
           targetsRef.current.filter(
@@ -1558,9 +1330,7 @@ const GameScene = ({
           remainingTargets,
         );
 
-        /* ===================================================
-           COMPLETION
-           =================================================== */
+        /* COMPLETE */
 
         checkGameComplete(
           remainingTargets,
@@ -1596,36 +1366,30 @@ const GameScene = ({
 
   return (
     <>
-      {/* ===================================================
+      {/* =================================================
           FOG
-          =================================================== */}
+          ================================================= */}
 
       <fog
         attach="fog"
         args={[
           "#000000",
-          25,
-          100,
+          45,
+          180,
         ]}
       />
 
-      {/* ===================================================
-          TUNNEL
-          =================================================== */}
-
-      <Tunnel />
-
-      {/* ===================================================
-          MOVING GRID
-          =================================================== */}
+      {/* =================================================
+          MOVING TUNNEL GRID
+          ================================================= */}
 
       <MovingGrid
         gameOver={gameOver}
       />
 
-      {/* ===================================================
+      {/* =================================================
           TARGETS
-          =================================================== */}
+          ================================================= */}
 
       {targets.map(
         (target) => (
@@ -1646,9 +1410,9 @@ const GameScene = ({
         ),
       )}
 
-      {/* ===================================================
+      {/* =================================================
           BULLETS
-          =================================================== */}
+          ================================================= */}
 
       {bullets.map(
         (bullet) => (
@@ -1861,9 +1625,9 @@ export default function SkillCloud({
         mt-12
       "
     >
-      {/* ===================================================
+      {/* =================================================
           HEADER
-          =================================================== */}
+          ================================================= */}
 
       <div
         className="
@@ -1887,9 +1651,9 @@ export default function SkillCloud({
         </div>
       </div>
 
-      {/* ===================================================
+      {/* =================================================
           GAME WINDOW
-          =================================================== */}
+          ================================================= */}
 
       <div
         onMouseEnter={() =>
@@ -1911,7 +1675,7 @@ export default function SkillCloud({
         "
       >
         {/* =================================================
-            SHOOT FLASH
+            FLASH
             ================================================= */}
 
         <AnimatePresence>
@@ -1939,26 +1703,26 @@ export default function SkillCloud({
         </AnimatePresence>
 
         {/* =================================================
-            CANVAS
+            THREE.JS CANVAS
             ================================================= */}
 
         <InViewCanvas
           camera={{
             position: [
               0,
-              1,
+              0,
               8,
             ],
-            fov: 55,
+            fov: 50,
             near: 0.1,
-            far: 150,
+            far: 250,
           }}
           dpr={[
             1,
             1.5,
           ]}
           gl={{
-            antialias: true,
+            antialias: false,
             powerPreference:
               "high-performance",
           }}
@@ -2096,9 +1860,9 @@ export default function SkillCloud({
         </AnimatePresence>
       </div>
 
-      {/* ===================================================
+      {/* =================================================
           FOOTER
-          =================================================== */}
+          ================================================= */}
 
       <div
         className="
@@ -2116,9 +1880,9 @@ export default function SkillCloud({
           : "BREAK THE TARGETS!"}
       </div>
 
-      {/* ===================================================
-          SKILL RESULTS
-          =================================================== */}
+      {/* =================================================
+          RESULTS
+          ================================================= */}
 
       <AnimatePresence>
         {totalDiscovered > 0 && (
@@ -2183,9 +1947,7 @@ export default function SkillCloud({
                 md:grid-cols-2
               "
             >
-              {/* =========================================
-                  HIT
-                  ========================================= */}
+              {/* HIT */}
 
               <div
                 className="
@@ -2275,9 +2037,7 @@ export default function SkillCloud({
                 )}
               </div>
 
-              {/* =========================================
-                  MISS
-                  ========================================= */}
+              {/* MISS */}
 
               <div
                 className="
