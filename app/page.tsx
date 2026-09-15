@@ -240,9 +240,9 @@ const projects: Project[] = [
     year: "2026",
     shortName: "PriceTrail",
     role: "FULL-STACK DEVELOPER",
-    tech: ["TYPESCRIPT", "NESTJS", "NEXT.JS", "POSTGRESQL", "REDIS"],
+    tech: ["TYPESCRIPT", "NESTJS", "POSTGRESQL", "REDIS", "BullMQ", "PGVECTOR"],
     description:
-      "A full-stack Flipkart price-tracking platform built as a 9-package TypeScript monorepo, with an automated daily scrape-embed-match pipeline, a partitioned time-series schema, and a multi-layer product matching engine using pgvector HNSW semantic search.",
+      "A cross-platform e-commerce price aggregator built with NestJS, PostgreSQL, and BullMQ. Designed a resilient data extraction pipeline using APIs, Cheerio, and Playwright, with automated semantic product matching powered by PostgreSQL pgvector.",
     image: "/images/pricetrail.jpg",
     link: "https://pricetrail-tau.vercel.app",
     pipeline: ["SCRAPE", "EMBED", "MATCH", "STORE"],
@@ -250,11 +250,11 @@ const projects: Project[] = [
   {
     id: "2",
     year: "2026",
-    shortName: "MindTrack",
+    shortName: "MindWell",
     role: "FULL-STACK DEVELOPER",
     tech: ["MERN STACK", "MACHINE LEARNING", "TAILWIND CSS"],
     description:
-      "An AI-powered platform with secure user authentication, interactive dashboards for mood trends, and personalized wellness insights.",
+      "An AI-powered mental health tracking platform built with the MERN stack and machine learning. Implemented secure authentication, MongoDB-based mood journal storage, interactive mood-trend dashboards, and personalized wellness insights.",
     image: "/images/mindwell.jpg",
     link: "https://github.com/KUSH-Q-37/mindwell",
   },
@@ -265,7 +265,7 @@ const projects: Project[] = [
     role: "DATA ANALYST",
     tech: ["PYTHON", "NUMPY", "PANDAS", "MATPLOTLIB", "SEABORN"],
     description:
-      "Exploratory data analysis and complex data visualizations mapping team performance and match trends.",
+      "Performed exploratory data analysis on IPL 2022 match and player datasets using Python, NumPy, Pandas, Matplotlib, and Seaborn. Cleaned and transformed the data and developed visualizations to analyze team performance, player statistics, and match trends.",
     image: "/images/ipl.jpg",
     link: "https://github.com/KUSH-Q-37/Data-Science",
   },
@@ -397,17 +397,17 @@ export default function Home() {
               variants={fadeUpVariant}
               className="mt-6 pl-4 md:pl-0 text-xl md:text-2xl text-zinc-400 max-w-2xl font-light pointer-events-auto"
             >
-              Full-Stack Developer & 2026 CS Graduate crafting
-              interactive, high-performance digital experiences at VM One Technologies.
+              Full-Stack Developer & 2026 Computer Science graduate building production-grade, 
+              high-performance digital experiences at VM One Technologies.
             </motion.p>
 
             <motion.p
               variants={fadeUpVariant}
               className="mt-4 pl-4 md:pl-0 text-sm md:text-base text-zinc-500 max-w-xl font-light pointer-events-auto"
             >
-              Comfortable across the stack — React and Node on the front and back end,
-              PostgreSQL and Redis underneath — with a background in Python and
-              machine learning from earlier data science work.
+              Working across the modern JavaScript stack — React, Next.js, TypeScript, Node.js, and NestJS — with 
+              PostgreSQL, Redis, MongoDB, and Prisma on the data layer. Additional experience in Python, 
+              machine learning, data analysis, REST APIs, and production web applications.
             </motion.p>
           </motion.div>
         </section>
