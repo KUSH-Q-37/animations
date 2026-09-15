@@ -8,7 +8,11 @@ import {
   useCallback,
 } from "react";
 
-import { useFrame, useThree } from "@react-three/fiber";
+import {
+  useFrame,
+  useThree,
+} from "@react-three/fiber";
+
 import { Text } from "@react-three/drei";
 
 import {
@@ -89,7 +93,7 @@ const MAX_TARGETS = 5;
 
 const SPAWN_INTERVAL = 1400;
 
-const FIRST_SPAWN_DELAY = 500;
+const FIRST_SPAWN_DELAY = 700;
 
 const TARGET_SPEED = 12;
 
@@ -97,21 +101,29 @@ const MIN_SPAWN_Z = -70;
 
 const MAX_SPAWN_Z = -55;
 
-/*
- * IMPORTANT:
- * This was missing in your previous code.
+/**
+ * Minimum distance between targets when spawning.
  */
 const MIN_TARGET_DISTANCE = 5;
+
+/**
+ * Maximum delta allowed for game simulation.
+ *
+ * This prevents targets/grid/bullets from jumping
+ * if the browser experiences a long frame.
+ */
+const MAX_GAME_DELTA = 0.05;
 
 /* =========================================================
    BULLET SETTINGS
    ========================================================= */
 
-const MUZZLE_POSITION = new THREE.Vector3(
-  0,
-  -2.6,
-  7.4,
-);
+const MUZZLE_POSITION =
+  new THREE.Vector3(
+    0,
+    -2.6,
+    7.4,
+  );
 
 const BULLET_SPEED = 70;
 
@@ -139,12 +151,19 @@ const GRID_SPEED = 15;
 
 interface TargetData {
   id: number;
+
   text: string;
-  position: [number, number, number];
+
+  position: [
+    number,
+    number,
+    number,
+  ];
 }
 
 interface TargetProps {
   id: number;
+
   text: string;
 
   initialPosition: [
@@ -152,6 +171,8 @@ interface TargetProps {
     number,
     number,
   ];
+
+  isVisible: boolean;
 
   onHit: (
     id: number,
@@ -165,7 +186,9 @@ interface TargetProps {
 
 interface BulletData {
   id: number;
+
   from: THREE.Vector3;
+
   to: THREE.Vector3;
 }
 
@@ -187,13 +210,11 @@ const shuffleArray = <T,>(
       Math.random() * (i + 1),
     );
 
-    [
-      result[i],
-      result[j],
-    ] = [
-      result[j],
-      result[i],
-    ];
+    const temp = result[i];
+
+    result[i] = result[j];
+
+    result[j] = temp;
   }
 
   return result;
@@ -207,10 +228,15 @@ const Bullet = ({
   from,
   to,
   onDone,
+  isVisible,
 }: {
   from: THREE.Vector3;
+
   to: THREE.Vector3;
+
   onDone: () => void;
+
+  isVisible: boolean;
 }) => {
   const bulletRef =
     useRef<THREE.Mesh>(null);
@@ -222,15 +248,19 @@ const Bullet = ({
     useRef<THREE.Mesh>(null);
 
   const coreMatRef =
-    useRef<THREE.MeshBasicMaterial>(null);
+    useRef<THREE.MeshBasicMaterial>(
+      null,
+    );
 
   const ringRef =
     useRef<THREE.Mesh>(null);
 
   const ringMatRef =
-    useRef<THREE.MeshBasicMaterial>(null);
+    useRef<THREE.MeshBasicMaterial>(
+      null,
+    );
 
-  const elapsedRef =
+  const elapsed =
     useRef(0);
 
   const doneRef =
@@ -242,7 +272,7 @@ const Bullet = ({
     travelTime,
     streakLength,
   } = useMemo(() => {
-    const directionVector =
+    const dir =
       new THREE.Vector3().subVectors(
         to,
         from,
@@ -250,18 +280,22 @@ const Bullet = ({
 
     const distance =
       Math.max(
-        directionVector.length(),
+        dir.length(),
         0.001,
       );
 
     const normalizedDirection =
-      directionVector
+      dir
         .clone()
         .normalize();
 
-    const quaternionValue =
+    const quat =
       new THREE.Quaternion().setFromUnitVectors(
-        new THREE.Vector3(0, 1, 0),
+        new THREE.Vector3(
+          0,
+          1,
+          0,
+        ),
         normalizedDirection,
       );
 
@@ -277,7 +311,7 @@ const Bullet = ({
         normalizedDirection,
 
       quaternion:
-        quaternionValue,
+        quat,
 
       travelTime:
         calculatedTravelTime,
@@ -290,44 +324,32 @@ const Bullet = ({
     };
   }, [from, to]);
 
-  useEffect(() => {
-    elapsedRef.current = 0;
-    doneRef.current = false;
-
-    if (coreRef.current) {
-      coreRef.current.visible = false;
-      coreRef.current.scale.setScalar(1);
-    }
-
-    if (ringRef.current) {
-      ringRef.current.visible = false;
-      ringRef.current.scale.setScalar(1);
-    }
-
-    if (coreMatRef.current) {
-      coreMatRef.current.opacity = 1;
-    }
-
-    if (ringMatRef.current) {
-      ringMatRef.current.opacity = 1;
-    }
-  }, []);
-
-  useFrame((_, delta) => {
-    if (doneRef.current) {
+  useFrame((_, rawDelta) => {
+    /**
+     * Pause bullet simulation while
+     * the game is outside the viewport.
+     */
+    if (!isVisible) {
       return;
     }
 
-    elapsedRef.current += delta;
+    const delta = Math.min(
+      rawDelta,
+      MAX_GAME_DELTA,
+    );
+
+    elapsed.current += delta;
 
     const time =
-      elapsedRef.current;
+      elapsed.current;
 
-    /* =====================================================
+    /* =======================================================
        FLIGHT
-       ===================================================== */
+       ======================================================= */
 
-    if (time < travelTime) {
+    if (
+      time < travelTime
+    ) {
       const travelT =
         time / travelTime;
 
@@ -339,7 +361,9 @@ const Bullet = ({
             travelT,
           );
 
-      if (bulletRef.current) {
+      if (
+        bulletRef.current
+      ) {
         bulletRef.current.visible =
           true;
 
@@ -348,7 +372,9 @@ const Bullet = ({
         );
       }
 
-      if (streakRef.current) {
+      if (
+        streakRef.current
+      ) {
         streakRef.current.visible =
           true;
 
@@ -367,44 +393,44 @@ const Bullet = ({
       return;
     }
 
-    /* =====================================================
+    /* =======================================================
        IMPACT
-       ===================================================== */
+       ======================================================= */
 
-    if (bulletRef.current) {
+    if (
+      bulletRef.current
+    ) {
       bulletRef.current.visible =
         false;
     }
 
-    if (streakRef.current) {
+    if (
+      streakRef.current
+    ) {
       streakRef.current.visible =
         false;
     }
 
-    if (coreRef.current) {
+    if (
+      coreRef.current
+    ) {
       coreRef.current.visible =
         true;
-
-      coreRef.current.position.copy(
-        to,
-      );
     }
 
-    if (ringRef.current) {
+    if (
+      ringRef.current
+    ) {
       ringRef.current.visible =
         true;
-
-      ringRef.current.position.copy(
-        to,
-      );
     }
 
     const impactTime =
       time - travelTime;
 
-    /* =====================================================
+    /* =======================================================
        CORE
-       ===================================================== */
+       ======================================================= */
 
     const coreT =
       Math.min(
@@ -413,21 +439,25 @@ const Bullet = ({
         1,
       );
 
-    if (coreRef.current) {
+    if (
+      coreRef.current
+    ) {
       coreRef.current.scale.setScalar(
         1.6 -
           coreT * 1.4,
       );
     }
 
-    if (coreMatRef.current) {
+    if (
+      coreMatRef.current
+    ) {
       coreMatRef.current.opacity =
         1 - coreT;
     }
 
-    /* =====================================================
+    /* =======================================================
        RING
-       ===================================================== */
+       ======================================================= */
 
     const ringT =
       Math.min(
@@ -436,25 +466,30 @@ const Bullet = ({
         1,
       );
 
-    if (ringRef.current) {
+    if (
+      ringRef.current
+    ) {
       ringRef.current.scale.setScalar(
         0.3 +
           ringT * 1.5,
       );
     }
 
-    if (ringMatRef.current) {
+    if (
+      ringMatRef.current
+    ) {
       ringMatRef.current.opacity =
         1 - ringT;
     }
 
-    /* =====================================================
+    /* =======================================================
        CLEANUP
-       ===================================================== */
+       ======================================================= */
 
     if (
       impactTime >=
-        RING_LIFETIME
+        RING_LIFETIME &&
+      !doneRef.current
     ) {
       doneRef.current = true;
 
@@ -464,7 +499,9 @@ const Bullet = ({
 
   return (
     <group>
-      {/* BULLET */}
+      {/* =================================================
+          BULLET
+          ================================================= */}
 
       <mesh
         ref={bulletRef}
@@ -488,7 +525,9 @@ const Bullet = ({
         />
       </mesh>
 
-      {/* STREAK */}
+      {/* =================================================
+          STREAK
+          ================================================= */}
 
       <mesh
         ref={streakRef}
@@ -515,7 +554,9 @@ const Bullet = ({
         />
       </mesh>
 
-      {/* IMPACT CORE */}
+      {/* =================================================
+          IMPACT CORE
+          ================================================= */}
 
       <mesh
         ref={coreRef}
@@ -543,7 +584,9 @@ const Bullet = ({
         />
       </mesh>
 
-      {/* SHOCKWAVE */}
+      {/* =================================================
+          SHOCKWAVE
+          ================================================= */}
 
       <mesh
         ref={ringRef}
@@ -581,18 +624,29 @@ const Bullet = ({
 
 const MovingGrid = ({
   gameOver,
+  isVisible,
 }: {
   gameOver: boolean;
+
+  isVisible: boolean;
 }) => {
   const gridRefs =
     useRef<
       Array<THREE.Group | null>
     >([]);
 
-  useFrame((_, delta) => {
-    if (gameOver) {
+  useFrame((_, rawDelta) => {
+    if (
+      gameOver ||
+      !isVisible
+    ) {
       return;
     }
+
+    const delta = Math.min(
+      rawDelta,
+      MAX_GAME_DELTA,
+    );
 
     for (
       let i = 0;
@@ -666,6 +720,7 @@ const Target = ({
   initialPosition,
   onHit,
   onMiss,
+  isVisible,
 }: TargetProps) => {
   const meshRef =
     useRef<THREE.Mesh>(null);
@@ -682,59 +737,55 @@ const Target = ({
   const hitRef =
     useRef(false);
 
-  useEffect(() => {
-    timeRef.current = 0;
-    missedRef.current = false;
-    hitRef.current = false;
-  }, [id]);
-
-  useFrame((_, delta) => {
-    const mesh =
-      meshRef.current;
-
-    if (!mesh) {
-      return;
-    }
-
+  useFrame((_, rawDelta) => {
     if (
-      missedRef.current ||
-      hitRef.current
+      !meshRef.current ||
+      !isVisible
     ) {
       return;
     }
 
-    timeRef.current += delta;
+    const delta = Math.min(
+      rawDelta,
+      MAX_GAME_DELTA,
+    );
+
+    timeRef.current +=
+      delta;
 
     const time =
       timeRef.current;
 
-    /* =====================================================
-       MOVE TOWARD CAMERA
-       ===================================================== */
+    /* =======================================================
+       MOVEMENT
+       ======================================================= */
 
-    mesh.position.z +=
+    meshRef.current.position.z +=
       delta * TARGET_SPEED;
 
-    /* =====================================================
-       SUBTLE MOVEMENT
-       ===================================================== */
+    /* =======================================================
+       ROTATION
+       ======================================================= */
 
-    mesh.rotation.y =
+    meshRef.current.rotation.y =
       Math.sin(
         time * 1.5 + id,
       ) * 0.045;
 
-    mesh.rotation.z =
+    meshRef.current.rotation.z =
       Math.cos(
         time * 1.5 + id,
       ) * 0.025;
 
-    /* =====================================================
+    /* =======================================================
        MISS
-       ===================================================== */
+       ======================================================= */
 
     if (
-      mesh.position.z > 10
+      meshRef.current.position.z >
+        10 &&
+      !missedRef.current &&
+      !hitRef.current
     ) {
       missedRef.current =
         true;
@@ -781,13 +832,12 @@ const Target = ({
           event.point.clone(),
         );
       }}
-      onPointerOver={(event) => {
-        event.stopPropagation();
-        setHovered(true);
-      }}
-      onPointerOut={() => {
-        setHovered(false);
-      }}
+      onPointerOver={() =>
+        setHovered(true)
+      }
+      onPointerOut={() =>
+        setHovered(false)
+      }
     >
       <boxGeometry
         args={[
@@ -836,6 +886,7 @@ const GameScene = ({
   onGameOver,
   gameKey,
   gameOver,
+  isVisible,
   onSkillHit,
   onSkillMiss,
 }: {
@@ -848,6 +899,8 @@ const GameScene = ({
   gameKey: number;
 
   gameOver: boolean;
+
+  isVisible: boolean;
 
   onSkillHit: (
     skill: string,
@@ -887,46 +940,13 @@ const GameScene = ({
   const targetsRef =
     useRef<TargetData[]>([]);
 
-  /* =======================================================
-     CAMERA / VIEWPORT
-     ======================================================= */
-
-  const { size } =
-    useThree();
-
-  const aspectRef =
-    useRef(1);
-
   useEffect(() => {
-    aspectRef.current =
-      size.width /
-      Math.max(
-        size.height,
-        1,
-      );
-  }, [size]);
+    targetsRef.current =
+      targets;
+  }, [targets]);
 
   /* =======================================================
-     GAME COMPLETE GUARD
-     ======================================================= */
-
-  const gameOverTriggeredRef =
-    useRef(false);
-
-  useEffect(() => {
-    gameOverTriggeredRef.current =
-      false;
-  }, [gameKey]);
-
-  useEffect(() => {
-    if (!gameOver) {
-      gameOverTriggeredRef.current =
-        false;
-    }
-  }, [gameOver]);
-
-  /* =======================================================
-     RESET
+     RESET GAME
      ======================================================= */
 
   useEffect(() => {
@@ -953,16 +973,46 @@ const GameScene = ({
   }, [gameKey]);
 
   /* =======================================================
-     SYNC TARGET REF
+     CAMERA
      ======================================================= */
 
+  const { size } =
+    useThree();
+
+  const aspectRef =
+    useRef(
+      size.width /
+        Math.max(
+          size.height,
+          1,
+        ),
+    );
+
   useEffect(() => {
-    targetsRef.current =
-      targets;
-  }, [targets]);
+    aspectRef.current =
+      size.width /
+      Math.max(
+        size.height,
+        1,
+      );
+  }, [size]);
 
   /* =======================================================
-     COMPLETE
+     GAME OVER GUARD
+     ======================================================= */
+
+  const gameOverTriggeredRef =
+    useRef(false);
+
+  useEffect(() => {
+    if (!gameOver) {
+      gameOverTriggeredRef.current =
+        false;
+    }
+  }, [gameOver]);
+
+  /* =======================================================
+     COMPLETION
      ======================================================= */
 
   const checkGameComplete =
@@ -1000,7 +1050,16 @@ const GameScene = ({
 
   const spawnTarget =
     useCallback(() => {
-      if (gameOver) {
+      /**
+       * Never spawn while:
+       *
+       * - game is over
+       * - canvas is outside viewport
+       */
+      if (
+        gameOver ||
+        !isVisible
+      ) {
         return;
       }
 
@@ -1022,6 +1081,10 @@ const GameScene = ({
         return;
       }
 
+      /* -----------------------------------------------
+         TAKE ONE SKILL
+         ----------------------------------------------- */
+
       const text =
         skillQueueRef.current.shift();
 
@@ -1029,39 +1092,37 @@ const GameScene = ({
         return;
       }
 
-      /* ===================================================
-         CAMERA-AWARE X RANGE
-         =================================================== */
+      /* -----------------------------------------------
+         VISIBLE WIDTH
+         ----------------------------------------------- */
 
-      const referenceDistance =
+      const REFERENCE_DISTANCE =
         25;
 
-      const halfFov =
+      const HALF_FOV =
         THREE.MathUtils.degToRad(
           25,
         );
 
       const visibleHalfWidth =
-        referenceDistance *
-        Math.tan(halfFov) *
-        Math.max(
-          aspectRef.current,
-          0.75,
-        );
+        REFERENCE_DISTANCE *
+        Math.tan(HALF_FOV) *
+        aspectRef.current;
 
       const xRange =
-        THREE.MathUtils.clamp(
-          visibleHalfWidth * 0.65,
+        Math.max(
+          visibleHalfWidth * 0.72,
           4,
-          14,
         );
 
-      /* ===================================================
-         FIND NON-OVERLAPPING POSITION
-         =================================================== */
+      /* -----------------------------------------------
+         POSITION
+         ----------------------------------------------- */
 
       let x = 0;
+
       let y = 0;
+
       let z = 0;
 
       let validPosition =
@@ -1072,7 +1133,7 @@ const GameScene = ({
 
       for (
         let attempt = 0;
-        attempt < 60;
+        attempt < 50;
         attempt++
       ) {
         x =
@@ -1083,16 +1144,17 @@ const GameScene = ({
         y =
           THREE.MathUtils.lerp(
             -0.5,
-            6.5,
+            7,
             Math.random(),
           );
 
         z =
-          THREE.MathUtils.lerp(
-            MIN_SPAWN_Z,
-            MAX_SPAWN_Z,
-            Math.random(),
-          );
+          MIN_SPAWN_Z +
+          Math.random() *
+            (
+              MAX_SPAWN_Z -
+              MIN_SPAWN_Z
+            );
 
         validPosition =
           currentTargets.every(
@@ -1123,7 +1185,9 @@ const GameScene = ({
             },
           );
 
-        if (validPosition) {
+        if (
+          validPosition
+        ) {
           break;
         }
       }
@@ -1142,9 +1206,9 @@ const GameScene = ({
           ],
         };
 
-      /* ===================================================
-         UPDATE REF IMMEDIATELY
-         =================================================== */
+      /* -----------------------------------------------
+         UPDATE REF FIRST
+         ----------------------------------------------- */
 
       const nextTargets = [
         ...targetsRef.current,
@@ -1154,15 +1218,16 @@ const GameScene = ({
       targetsRef.current =
         nextTargets;
 
-      /* ===================================================
-         UPDATE REACT
-         =================================================== */
+      /* -----------------------------------------------
+         UPDATE REACT STATE
+         ----------------------------------------------- */
 
       setTargets(
         nextTargets,
       );
     }, [
       gameOver,
+      isVisible,
       checkGameComplete,
     ]);
 
@@ -1171,29 +1236,24 @@ const GameScene = ({
      ======================================================= */
 
   useEffect(() => {
-    if (gameOver) {
+    if (
+      gameOver ||
+      !isVisible
+    ) {
       return;
     }
 
-    let cancelled = false;
-
     const firstSpawn =
       window.setTimeout(() => {
-        if (!cancelled) {
-          spawnTarget();
-        }
+        spawnTarget();
       }, FIRST_SPAWN_DELAY);
 
     const interval =
       window.setInterval(() => {
-        if (!cancelled) {
-          spawnTarget();
-        }
+        spawnTarget();
       }, SPAWN_INTERVAL);
 
     return () => {
-      cancelled = true;
-
       window.clearTimeout(
         firstSpawn,
       );
@@ -1206,6 +1266,7 @@ const GameScene = ({
     spawnTarget,
     gameKey,
     gameOver,
+    isVisible,
   ]);
 
   /* =======================================================
@@ -1228,20 +1289,26 @@ const GameScene = ({
           return;
         }
 
-        /* RECORD */
+        /* -----------------------------------------------
+           RECORD HIT
+           ----------------------------------------------- */
 
         onSkillHit(
           target.text,
         );
 
-        /* SCORE */
+        /* -----------------------------------------------
+           SCORE
+           ----------------------------------------------- */
 
         setScore(
           (previous) =>
             previous + 1,
         );
 
-        /* REMOVE */
+        /* -----------------------------------------------
+           REMOVE TARGET
+           ----------------------------------------------- */
 
         const remainingTargets =
           targetsRef.current.filter(
@@ -1256,7 +1323,9 @@ const GameScene = ({
           remainingTargets,
         );
 
-        /* BULLET */
+        /* -----------------------------------------------
+           BULLET
+           ----------------------------------------------- */
 
         const bulletId =
           nextBulletId.current++;
@@ -1273,13 +1342,15 @@ const GameScene = ({
           };
 
         setBullets(
-          (previous) => [
-            ...previous,
+          (previousBullets) => [
+            ...previousBullets,
             bullet,
           ],
         );
 
-        /* COMPLETE */
+        /* -----------------------------------------------
+           COMPLETION
+           ----------------------------------------------- */
 
         checkGameComplete(
           remainingTargets,
@@ -1309,13 +1380,17 @@ const GameScene = ({
           return;
         }
 
-        /* RECORD */
+        /* -----------------------------------------------
+           RECORD MISS
+           ----------------------------------------------- */
 
         onSkillMiss(
           target.text,
         );
 
-        /* REMOVE */
+        /* -----------------------------------------------
+           REMOVE TARGET
+           ----------------------------------------------- */
 
         const remainingTargets =
           targetsRef.current.filter(
@@ -1330,7 +1405,9 @@ const GameScene = ({
           remainingTargets,
         );
 
-        /* COMPLETE */
+        /* -----------------------------------------------
+           COMPLETION
+           ----------------------------------------------- */
 
         checkGameComplete(
           remainingTargets,
@@ -1366,30 +1443,31 @@ const GameScene = ({
 
   return (
     <>
-      {/* =================================================
+      {/* ===================================================
           FOG
-          ================================================= */}
+          =================================================== */}
 
       <fog
         attach="fog"
         args={[
           "#000000",
-          45,
-          180,
+          60,
+          250,
         ]}
       />
 
-      {/* =================================================
-          MOVING TUNNEL GRID
-          ================================================= */}
+      {/* ===================================================
+          GRID
+          =================================================== */}
 
       <MovingGrid
         gameOver={gameOver}
+        isVisible={isVisible}
       />
 
-      {/* =================================================
+      {/* ===================================================
           TARGETS
-          ================================================= */}
+          =================================================== */}
 
       {targets.map(
         (target) => (
@@ -1400,6 +1478,7 @@ const GameScene = ({
             initialPosition={
               target.position
             }
+            isVisible={isVisible}
             onHit={
               handleHit
             }
@@ -1410,9 +1489,9 @@ const GameScene = ({
         ),
       )}
 
-      {/* =================================================
+      {/* ===================================================
           BULLETS
-          ================================================= */}
+          =================================================== */}
 
       {bullets.map(
         (bullet) => (
@@ -1423,6 +1502,9 @@ const GameScene = ({
             }
             to={
               bullet.to
+            }
+            isVisible={
+              isVisible
             }
             onDone={() =>
               handleBulletDone(
@@ -1463,6 +1545,17 @@ export default function SkillCloud({
   const [gameKey, setGameKey] =
     useState(0);
 
+  /**
+   * Tracks whether the game window is
+   * inside the viewport.
+   *
+   * This does NOT control Canvas rendering.
+   */
+  const [
+    isGameVisible,
+    setIsGameVisible,
+  ] = useState(true);
+
   /* =======================================================
      RESULTS
      ======================================================= */
@@ -1470,8 +1563,10 @@ export default function SkillCloud({
   const [hitSkills, setHitSkills] =
     useState<string[]>([]);
 
-  const [missSkills, setMissSkills] =
-    useState<string[]>([]);
+  const [
+    missSkills,
+    setMissSkills,
+  ] = useState<string[]>([]);
 
   /* =======================================================
      FLASH TIMEOUT
@@ -1499,6 +1594,28 @@ export default function SkillCloud({
       }
     };
   }, []);
+
+  /* =======================================================
+     VISIBILITY
+     ======================================================= */
+
+  const handleGameVisibility =
+    useCallback(
+      (visible: boolean) => {
+        setIsGameVisible(
+          visible,
+        );
+
+        /**
+         * When the game leaves the viewport,
+         * release the custom game cursor.
+         */
+        if (!visible) {
+          onGameHover(false);
+        }
+      },
+      [onGameHover],
+    );
 
   /* =======================================================
      HIT
@@ -1540,7 +1657,10 @@ export default function SkillCloud({
 
   const handleShoot =
     useCallback(() => {
-      if (gameOver) {
+      if (
+        gameOver ||
+        !isGameVisible
+      ) {
         return;
       }
 
@@ -1558,7 +1678,10 @@ export default function SkillCloud({
         setTimeout(() => {
           setFlash(false);
         }, 100);
-    }, [gameOver]);
+    }, [
+      gameOver,
+      isGameVisible,
+    ]);
 
   /* =======================================================
      GAME OVER
@@ -1589,6 +1712,9 @@ export default function SkillCloud({
 
       setMissSkills([]);
 
+      /**
+       * Completely remount GameScene.
+       */
       setGameKey(
         (previous) =>
           previous + 1,
@@ -1625,9 +1751,9 @@ export default function SkillCloud({
         mt-12
       "
     >
-      {/* =================================================
+      {/* ===================================================
           HEADER
-          ================================================= */}
+          =================================================== */}
 
       <div
         className="
@@ -1651,14 +1777,19 @@ export default function SkillCloud({
         </div>
       </div>
 
-      {/* =================================================
+      {/* ===================================================
           GAME WINDOW
-          ================================================= */}
+          =================================================== */}
 
       <div
-        onMouseEnter={() =>
-          onGameHover(true)
-        }
+        onMouseEnter={() => {
+          if (
+            isGameVisible &&
+            !gameOver
+          ) {
+            onGameHover(true);
+          }
+        }}
         onMouseLeave={() =>
           onGameHover(false)
         }
@@ -1703,10 +1834,14 @@ export default function SkillCloud({
         </AnimatePresence>
 
         {/* =================================================
-            THREE.JS CANVAS
+            CANVAS
             ================================================= */}
 
         <InViewCanvas
+          rootMargin="150px"
+          onVisibilityChange={
+            handleGameVisibility
+          }
           camera={{
             position: [
               0,
@@ -1714,8 +1849,6 @@ export default function SkillCloud({
               8,
             ],
             fov: 50,
-            near: 0.1,
-            far: 250,
           }}
           dpr={[
             1,
@@ -1738,6 +1871,9 @@ export default function SkillCloud({
             }
             gameOver={
               gameOver
+            }
+            isVisible={
+              isGameVisible
             }
             onSkillHit={
               handleSkillHit
@@ -1860,9 +1996,9 @@ export default function SkillCloud({
         </AnimatePresence>
       </div>
 
-      {/* =================================================
+      {/* ===================================================
           FOOTER
-          ================================================= */}
+          =================================================== */}
 
       <div
         className="
@@ -1880,9 +2016,9 @@ export default function SkillCloud({
           : "BREAK THE TARGETS!"}
       </div>
 
-      {/* =================================================
-          RESULTS
-          ================================================= */}
+      {/* ===================================================
+          SKILL RESULTS
+          =================================================== */}
 
       <AnimatePresence>
         {totalDiscovered > 0 && (
@@ -1911,7 +2047,9 @@ export default function SkillCloud({
               font-mono
             "
           >
-            {/* RESULTS HEADER */}
+            {/* =================================================
+                RESULTS HEADER
+                ================================================= */}
 
             <div
               className="
@@ -1938,7 +2076,9 @@ export default function SkillCloud({
               </span>
             </div>
 
-            {/* RESULTS GRID */}
+            {/* =================================================
+                RESULTS GRID
+                ================================================= */}
 
             <div
               className="
@@ -1947,7 +2087,9 @@ export default function SkillCloud({
                 md:grid-cols-2
               "
             >
-              {/* HIT */}
+              {/* =================================================
+                  HIT
+                  ================================================= */}
 
               <div
                 className="
@@ -2037,7 +2179,9 @@ export default function SkillCloud({
                 )}
               </div>
 
-              {/* MISS */}
+              {/* =================================================
+                  MISS
+                  ================================================= */}
 
               <div
                 className="
