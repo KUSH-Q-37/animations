@@ -36,9 +36,9 @@ const journeyData: JourneyItem[] = [
   },
   {
     year: "July 2026 - Present",
-    title: "Web Developer Intern",
+    title: "FULL STACK DEVELOPER INTERN",
     subtitle: "VM One Technologies, Noida (On-site)",
-    description: "Designing and maintaining the company's production website end to end — a ten-section React 19 + TypeScript experience with GSAP/Lenis scroll animation and custom Canvas/WebGL visuals.",
+    description: "Building and maintaining production web applications across the frontend and backend, with a focus on high-performance React/Next.js experiences, interactive Canvas/WebGL visuals, animation systems, and backend/data infrastructure.",
   }
 ];
 
