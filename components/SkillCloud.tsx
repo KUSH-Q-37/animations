@@ -89,17 +89,12 @@ const SKILLS_LIST = [
    GAME SETTINGS
    ========================================================= */
 
-const MAX_TARGETS = 4;
+const MAX_TARGETS = 5;
+const SPAWN_INTERVAL = 1400;
+const TARGET_SPEED = 12;
 
-const SPAWN_INTERVAL = 2000;
-
-const TARGET_SPEED = 18;
-
-const MIN_TARGET_DISTANCE = 7;
-
-const MIN_SPAWN_Z = -105;
-const MAX_SPAWN_Z = -92;
-
+const MIN_SPAWN_Z = -70;
+const MAX_SPAWN_Z = -55;
 /* =========================================================
    BULLET SETTINGS
    ========================================================= */
@@ -1350,14 +1345,10 @@ const GameScene = ({
     <>
       {/* FOG */}
 
-      <fog
+     <fog
         attach="fog"
-        args={[
-          "#000000",
-          30,
-          90,
-        ]}
-      />
+        args={["#000000", 60, 250]}
+     />
 
       {/* GRID */}
 
