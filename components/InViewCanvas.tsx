@@ -1,38 +1,110 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
-import { Canvas, type CanvasProps } from "@react-three/fiber";
+import {
+  useEffect,
+  useRef,
+  useState,
+} from "react";
+
+import {
+  Canvas,
+  type CanvasProps,
+} from "@react-three/fiber";
+
+interface InViewCanvasProps
+  extends CanvasProps {
+  rootMargin?: string;
+
+  onVisibilityChange?: (
+    visible: boolean,
+  ) => void;
+}
 
 /**
- * Drop-in replacement for R3F's <Canvas> that pauses its render loop
- * (frameloop="never") whenever it's scrolled off-screen. Three.js keeps
- * showing the last painted frame, so nothing visually changes — the
- * animation just stops burning CPU/GPU while nobody can see it, and
- * resumes the instant it's back in the viewport.
+ * InViewCanvas
+ *
+ * IMPORTANT:
+ *
+ * The WebGL/R3F render loop intentionally stays alive.
+ *
+ * We do NOT use:
+ *
+ * frameloop={inView ? "always" : "never"}
+ *
+ * because interactive 3D games can become unstable
+ * when the WebGL render loop is stopped and restarted
+ * during page scrolling.
+ *
+ * Instead, the game receives visibility information
+ * and pauses its own simulation.
  */
 export default function InViewCanvas({
   children,
   rootMargin = "150px",
+  onVisibilityChange,
   ...props
-}: CanvasProps & { rootMargin?: string }) {
-  const containerRef = useRef<HTMLDivElement>(null);
-  const [inView, setInView] = useState(true);
+}: InViewCanvasProps) {
+  const containerRef =
+    useRef<HTMLDivElement>(null);
+
+  const [inView, setInView] =
+    useState(true);
 
   useEffect(() => {
-    const el = containerRef.current;
-    if (!el || typeof IntersectionObserver === "undefined") return;
+    const element =
+      containerRef.current;
 
-    const observer = new IntersectionObserver(
-      ([entry]) => setInView(entry.isIntersecting),
-      { rootMargin },
-    );
-    observer.observe(el);
-    return () => observer.disconnect();
-  }, [rootMargin]);
+    if (
+      !element ||
+      typeof IntersectionObserver ===
+        "undefined"
+    ) {
+      return;
+    }
+
+    const observer =
+      new IntersectionObserver(
+        ([entry]) => {
+          const visible =
+            entry.isIntersecting;
+
+          setInView(visible);
+
+          onVisibilityChange?.(
+            visible,
+          );
+        },
+        {
+          rootMargin,
+          threshold: 0.01,
+        },
+      );
+
+    observer.observe(element);
+
+    return () => {
+      observer.disconnect();
+    };
+  }, [
+    rootMargin,
+    onVisibilityChange,
+  ]);
 
   return (
-    <div ref={containerRef} className="w-full h-full">
-      <Canvas frameloop={inView ? "always" : "never"} {...props}>
+    <div
+      ref={containerRef}
+      className="w-full h-full"
+      data-in-view={inView}
+    >
+      <Canvas
+        /**
+         * DO NOT pause the R3F render loop.
+         *
+         * The game itself controls simulation updates.
+         */
+        frameloop="always"
+        {...props}
+      >
         {children}
       </Canvas>
     </div>
