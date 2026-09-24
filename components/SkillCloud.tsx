@@ -135,12 +135,14 @@ const CORE_LIFETIME = 0.1;
 const RING_LIFETIME = 0.24;
 
 /* =========================================================
-   AUDIO SETTINGS
+   BULLET SOUND
    ========================================================= */
 
 const BULLET_SOUND_SRC = "/images/bullet.mp3";
+
 const BULLET_SOUND_POOL_SIZE = 4;
-const BULLET_SOUND_VOLUME = 0.35;
+
+const BULLET_SOUND_VOLUME = 1.0;
 
 /* =========================================================
    GRID SETTINGS
@@ -896,7 +898,6 @@ const GameScene = ({
   isVisible,
   onSkillHit,
   onSkillMiss,
-  onShootSound,
 }: {
   setScore: React.Dispatch<
     React.SetStateAction<number>
@@ -917,8 +918,6 @@ const GameScene = ({
   onSkillMiss: (
     skill: string,
   ) => void;
-
-  onShootSound: () => void;
 }) => {
   const [targets, setTargets] =
     useState<TargetData[]>([]);
@@ -1579,67 +1578,6 @@ export default function SkillCloud({
   ] = useState<string[]>([]);
 
   /* =======================================================
-     BULLET SOUND
-     ======================================================= */
-
-  const bulletSoundPoolRef =
-    useRef<HTMLAudioElement[]>([]);
-
-  const bulletSoundIndexRef =
-    useRef(0);
-
-  useEffect(() => {
-    const pool = Array.from(
-      { length: BULLET_SOUND_POOL_SIZE },
-      () => {
-        const audio = new Audio(
-          BULLET_SOUND_SRC,
-        );
-
-        audio.preload = "auto";
-        audio.volume = BULLET_SOUND_VOLUME;
-
-        return audio;
-      },
-    );
-
-    bulletSoundPoolRef.current = pool;
-
-    return () => {
-      pool.forEach((audio) => {
-        audio.pause();
-        audio.removeAttribute("src");
-        audio.load();
-      });
-
-      bulletSoundPoolRef.current = [];
-    };
-  }, []);
-
-  const playBulletSound = useCallback(() => {
-    const pool = bulletSoundPoolRef.current;
-
-    if (pool.length === 0) {
-      return;
-    }
-
-    const index =
-      bulletSoundIndexRef.current %
-      pool.length;
-
-    const audio = pool[index];
-
-    bulletSoundIndexRef.current =
-      (index + 1) % pool.length;
-
-    audio.currentTime = 0;
-
-    void audio.play().catch(() => {
-      // Ignore playback failures caused by browser audio policies.
-    });
-  }, []);
-
-  /* =======================================================
      FLASH TIMEOUT
      ======================================================= */
 
@@ -1649,6 +1587,74 @@ export default function SkillCloud({
         typeof setTimeout
       > | null
     >(null);
+
+  /* =======================================================
+     BULLET SOUND
+     ======================================================= */
+
+  const bulletSoundsRef = useRef<
+    HTMLAudioElement[]
+  >([]);
+
+  const bulletSoundIndexRef =
+    useRef(0);
+
+  useEffect(() => {
+    const sounds = Array.from(
+      { length: BULLET_SOUND_POOL_SIZE },
+      () => {
+        const audio = new Audio(
+          BULLET_SOUND_SRC,
+        );
+
+        audio.preload = "auto";
+        audio.volume =
+          BULLET_SOUND_VOLUME;
+
+        return audio;
+      },
+    );
+
+    bulletSoundsRef.current = sounds;
+
+    return () => {
+      sounds.forEach((audio) => {
+        audio.pause();
+        audio.currentTime = 0;
+        audio.src = "";
+      });
+
+      bulletSoundsRef.current = [];
+    };
+  }, []);
+
+  const playBulletSound =
+    useCallback(() => {
+      const sounds =
+        bulletSoundsRef.current;
+
+      if (!sounds.length) {
+        return;
+      }
+
+      const index =
+        bulletSoundIndexRef.current %
+        sounds.length;
+
+      const audio = sounds[index];
+
+      audio.currentTime = 0;
+
+      void audio.play().catch((error) => {
+        console.warn(
+          "Bullet sound could not play:",
+          error,
+        );
+      });
+
+      bulletSoundIndexRef.current =
+        (index + 1) % sounds.length;
+    }, []);
 
   /* =======================================================
      CLEANUP
@@ -1695,6 +1701,8 @@ export default function SkillCloud({
   const handleSkillHit =
     useCallback(
       (skill: string) => {
+        playBulletSound();
+
         setHitSkills(
           (previous) => [
             ...previous,
@@ -1702,7 +1710,7 @@ export default function SkillCloud({
           ],
         );
       },
-      [],
+      [playBulletSound],
     );
 
   /* =======================================================
@@ -1951,9 +1959,6 @@ export default function SkillCloud({
             }
             onSkillMiss={
               handleSkillMiss
-            }
-            onShootSound={
-              playBulletSound
             }
           />
         </InViewCanvas>
