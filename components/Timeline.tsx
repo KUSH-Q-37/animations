@@ -35,10 +35,11 @@ const journeyData: JourneyItem[] = [
     linkLabel: "View Repository"
   },
   {
-    year: "July 2026 - Present",
-    title: "FULL STACK DEVELOPER INTERN",
-    subtitle: "VM One Technologies, Noida (On-site)",
-    description: "Building and maintaining production web applications across the frontend and backend, with a focus on high-performance React/Next.js experiences, interactive Canvas/WebGL visuals, animation systems, and backend/data infrastructure.",
+  year: "July 2026 - Present",
+  title: "FULL STACK DEVELOPER",
+  subtitle: "VM One Technologies, Noida (Full-time · On-site)",
+  description:
+    "Working as a full-time Full Stack Developer, building and maintaining production web applications across frontend, backend, and data infrastructure. Developing high-performance React/Next.js experiences, interactive Canvas/WebGL visuals, animation systems, backend services, automated data pipelines, and internal business applications.",
   }
 ];
 
