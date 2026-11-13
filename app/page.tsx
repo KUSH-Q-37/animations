@@ -714,7 +714,7 @@ export default function Home() {
 
         <NeonDivider />
 
-        <section className="relative min-h-screen bg-[#0a0a0a] overflow-hidden flex flex-col pt-24 sm:pt-28 md:pt-32 pb-16 md:pb-24 px-4 sm:px-8 md:px-16 z-10">
+        <section className="relative min-h-screen bg-[#0a0a0a] overflow-hidden flex flex-col pt-20 sm:pt-28 md:pt-32 pb-16 md:pb-24 px-4 sm:px-8 md:px-16 z-10">
           <div className="absolute bottom-10 left-1/2 -translate-x-1/2 md:top-63 md:bottom-auto md:left-auto md:-left-4 md:translate-x-0 w-[340px] h-[320px] md:w-[450px] md:h-[400px] opacity-80 z-0">
             <InViewCanvas
               camera={{ position: [0, 0, 15], fov: 45 }}
@@ -727,7 +727,7 @@ export default function Home() {
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 w-full max-w-[1600px] mx-auto z-20 relative pointer-events-none">
-            <div className="flex flex-col items-start justify-start w-full mt-4 sm:mt-0">
+            <div className="flex flex-col items-start justify-start w-full mt-2 sm:mt-0">
               <motion.div
                 initial="hidden"
                 whileInView="visible"
@@ -735,7 +735,7 @@ export default function Home() {
                 variants={fadeUpVariant}
                 className="mb-1 pointer-events-auto w-fit"
               >
-                <div className="inline-block bg-[#00ff33] text-black font-extrabold text-3xl sm:text-4xl md:text-5xl lg:text-6xl tracking-tighter leading-[1] px-2.5 sm:px-3 py-1 uppercase select-none">
+                <div className="inline-block bg-[#00ff33] text-black font-extrabold text-2xl xs:text-3xl sm:text-4xl md:text-5xl lg:text-6xl tracking-tighter leading-[1] px-2 sm:px-3 py-1 uppercase select-none whitespace-nowrap">
                   + LET&apos;S WORK
                 </div>
               </motion.div>
@@ -745,9 +745,9 @@ export default function Home() {
                 whileInView="visible"
                 viewport={{ once: true }}
                 variants={fadeUpVariant}
-                className="ml-4 sm:ml-8 md:ml-16 pointer-events-auto w-fit"
+                className="ml-3 sm:ml-8 md:ml-16 pointer-events-auto w-fit"
               >
-                <div className="inline-block bg-[#00ff33] text-black font-extrabold text-3xl sm:text-4xl md:text-5xl lg:text-6xl tracking-tighter leading-[1] px-2.5 sm:px-3 py-1 uppercase select-none">
+                <div className="inline-block bg-[#00ff33] text-black font-extrabold text-2xl xs:text-3xl sm:text-4xl md:text-5xl lg:text-6xl tracking-tighter leading-[1] px-2 sm:px-3 py-1 uppercase select-none whitespace-nowrap">
                   TOGETHER
                 </div>
               </motion.div>
