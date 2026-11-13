@@ -76,7 +76,8 @@ export default function CustomCursor({
    */
 
   useEffect(() => {
-    setIsHovering(false);
+    const id = setTimeout(() => setIsHovering(false), 0);
+    return () => clearTimeout(id);
   }, [isGame, isDrag]);
 
   /* =========================================================
@@ -132,8 +133,20 @@ export default function CustomCursor({
     const handleMouseOver = (
       e: MouseEvent,
     ) => {
+      // Touch pointers (e.g. mobile or DevTools responsive mode) should never trigger hover scale
+      if ("pointerType" in e && (e as PointerEvent).pointerType === "touch") {
+        setIsHovering(false);
+        return;
+      }
+
       const target =
         e.target as HTMLElement;
+
+      // Allow buttons/links to opt out of enlarging the cursor ring
+      if (target.closest("[data-no-cursor-scale]")) {
+        setIsHovering(false);
+        return;
+      }
 
       /*
        * closest() is more reliable than checking
@@ -151,6 +164,11 @@ export default function CustomCursor({
       setIsHovering(
         !!interactive,
       );
+    };
+
+    const handlePointerDown = () => {
+      // Reset hover on click/tap so the cursor ring doesn't stay enlarged
+      setIsHovering(false);
     };
 
     const handleMouseOut = (
@@ -258,6 +276,14 @@ export default function CustomCursor({
       },
     );
 
+    window.addEventListener(
+      "pointerdown",
+      handlePointerDown,
+      {
+        passive: true,
+      },
+    );
+
     document.addEventListener(
       "mouseout",
       handleWindowMouseOut,
@@ -286,6 +312,11 @@ export default function CustomCursor({
       window.removeEventListener(
         "pointerout",
         handleMouseOut,
+      );
+
+      window.removeEventListener(
+        "pointerdown",
+        handlePointerDown,
       );
 
       document.removeEventListener(

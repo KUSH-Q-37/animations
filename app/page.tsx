@@ -9,6 +9,7 @@ import CustomCursor from "@/components/CustomCursor";
 import Timeline from "@/components/Timeline";
 import SkillCloud from "@/components/SkillCloud";
 import ContactForm from "@/components/ContactForm";
+import GitHubUniverse from "@/components/github-universe/GitHubUniverse";
 
 
 import { useFrame } from "@react-three/fiber";
@@ -544,6 +545,10 @@ export default function Home() {
             ))}
           </div>
         </section>
+
+        <NeonDivider />
+
+        <GitHubUniverse />
 
         <NeonDivider />
 
