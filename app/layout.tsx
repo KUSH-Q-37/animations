@@ -15,7 +15,7 @@ const geistMono = Geist_Mono({
 const SITE_URL = "https://kush-bhardwaj.vercel.app/";
 const SITE_TITLE = "Kush Bhardwaj | Portfolio";
 const SITE_DESCRIPTION =
-  "Full-Stack Developer & 2026 CS Graduate crafting interactive, high-performance digital experiences at VM One Technologies.";
+  "Full-Stack Developer & 2026 CS Graduate crafting interactive, high-performance digital experiences at VMHUB LLP.";
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
@@ -45,7 +45,7 @@ const jsonLd = {
       jobTitle: "Full-Stack Developer",
       worksFor: {
         "@type": "Organization",
-        name: "VM One Technologies",
+        name: "VMHUB LLP",
       },
       alumniOf: {
         "@type": "CollegeOrUniversity",

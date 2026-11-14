@@ -37,7 +37,7 @@ const journeyData: JourneyItem[] = [
   {
   year: "July 2026 - Present",
   title: "FULL STACK DEVELOPER",
-  subtitle: "VMOne Technologies, Noida",
+  subtitle: "VMHUB LLP, Noida",
   description:
     "Working as a full-time Full Stack Developer, building and maintaining production web applications across frontend, backend, and data infrastructure. Developing high-performance React/Next.js experiences, interactive Canvas/WebGL visuals, animation systems, backend services, automated data pipelines, and internal business applications.",
   }

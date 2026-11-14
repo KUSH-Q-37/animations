@@ -82,7 +82,7 @@ export default async function OpengraphImage() {
             fontWeight: 300,
           }}
         >
-          Full-Stack Developer — VM One Technologies
+          Full-Stack Developer — VMHUB LLP
         </div>
       </div>
     ),

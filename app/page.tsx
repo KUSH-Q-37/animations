@@ -10,6 +10,9 @@ import Timeline from "@/components/Timeline";
 import SkillCloud from "@/components/SkillCloud";
 import ContactForm from "@/components/ContactForm";
 import GitHubUniverse from "@/components/github-universe/GitHubUniverse";
+import EngineeringTelemetryBar from "@/components/telemetry/EngineeringTelemetryBar";
+import ArchitecturePipelineInspector from "@/components/architecture-inspector/ArchitecturePipelineInspector";
+import CommandPaletteHUD from "@/components/command-palette/CommandPaletteHUD";
 
 
 import { useFrame } from "@react-three/fiber";
@@ -343,6 +346,8 @@ export default function Home() {
   return (
     <>
       <CustomCursor isGame={isGame} isDrag={isDrag} />
+      <EngineeringTelemetryBar />
+      <CommandPaletteHUD />
 
       <motion.div
         initial={{ opacity: 0, y: -16 }}
@@ -399,7 +404,7 @@ export default function Home() {
               className="mt-6 pl-4 md:pl-0 text-xl md:text-2xl text-zinc-400 max-w-2xl font-light pointer-events-auto"
             >
               Full-Stack Developer & 2026 Computer Science graduate building production-grade, 
-              high-performance digital experiences at VM One Technologies.
+              high-performance digital experiences at VMHUB LLP.
             </motion.p>
 
             <motion.p
@@ -415,7 +420,7 @@ export default function Home() {
 
         <NeonDivider />
 
-        <section className="bg-[#0a0a0a] relative z-10">
+        <section id="featured-work" className="bg-[#0a0a0a] relative z-10">
           <div className="px-4 md:px-12 py-10">
             <motion.h2
               initial="hidden"
@@ -519,7 +524,9 @@ export default function Home() {
                     </p>
                   </div>
 
-                  {project.pipeline && (
+                  {project.id === "1" ? (
+                    <ArchitecturePipelineInspector />
+                  ) : project.pipeline ? (
                     <div className="mt-6">
                       <h4 className="text-zinc-500 text-[9px] font-mono tracking-[0.2em] uppercase mb-2">
                         Pipeline
@@ -539,7 +546,7 @@ export default function Home() {
                         ))}
                       </div>
                     </div>
-                  )}
+                  ) : null}
                 </div>
               </motion.div>
             ))}
@@ -548,11 +555,13 @@ export default function Home() {
 
         <NeonDivider />
 
-        <GitHubUniverse />
+        <div id="github-universe">
+          <GitHubUniverse />
+        </div>
 
         <NeonDivider />
 
-        <section className="pt-24 pb-64 px-8 md:px-24 bg-zinc-950/50 relative z-10 overflow-hidden">
+        <section id="my-journey" className="pt-24 pb-64 px-8 md:px-24 bg-zinc-950/50 relative z-10 overflow-hidden">
           <div className="max-w-4xl mx-auto relative z-10">
             <motion.h2
               initial="hidden"
@@ -571,7 +580,7 @@ export default function Home() {
         <Divider />
 
         {/* --- COMPACTED CREDENTIALS SECTION --- */}
-        <section className="py-16 md:py-24 px-8 md:px-24 bg-background relative z-10">
+        <section id="credentials" className="py-16 md:py-24 px-8 md:px-24 bg-background relative z-10">
           <div className="max-w-6xl mx-auto relative z-10">
             <motion.h2
               initial="hidden"
@@ -691,7 +700,7 @@ export default function Home() {
 
         <NeonDivider />
 
-        <section className="py-24 px-8 md:px-24 overflow-hidden relative z-10 bg-background">
+        <section id="arsenal" className="py-24 px-8 md:px-24 overflow-hidden relative z-10 bg-background">
           <div className="max-w-6xl mx-auto relative z-10">
             <div className="mb-12">
               <motion.h2
@@ -714,7 +723,7 @@ export default function Home() {
 
         <NeonDivider />
 
-        <section className="relative min-h-screen bg-[#0a0a0a] overflow-hidden flex flex-col pt-20 sm:pt-28 md:pt-32 pb-16 md:pb-24 px-4 sm:px-8 md:px-16 z-10">
+        <section id="contact" className="relative min-h-screen bg-[#0a0a0a] overflow-hidden flex flex-col pt-20 sm:pt-28 md:pt-32 pb-16 md:pb-24 px-4 sm:px-8 md:px-16 z-10">
           <div className="absolute bottom-10 left-1/2 -translate-x-1/2 md:top-63 md:bottom-auto md:left-auto md:-left-4 md:translate-x-0 w-[340px] h-[320px] md:w-[450px] md:h-[400px] opacity-80 z-0">
             <InViewCanvas
               camera={{ position: [0, 0, 15], fov: 45 }}
@@ -804,7 +813,6 @@ export default function Home() {
             </div>
           </div>
         </section>
-        
       </main>
     </>
   );
