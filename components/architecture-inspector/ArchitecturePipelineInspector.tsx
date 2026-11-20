@@ -70,7 +70,7 @@ const STAGE_SPECS: Record<StageId, StageSpec> = {
 
 export default function ArchitecturePipelineInspector() {
   const [activeStage, setActiveStage] = useState<StageId>('SCRAPE');
-  const [isOpen, setIsOpen] = useState(true);
+  const [isOpen, setIsOpen] = useState(false);
 
   const currentSpec = STAGE_SPECS[activeStage];
 
@@ -80,7 +80,7 @@ export default function ArchitecturePipelineInspector() {
       <div className="flex items-center justify-between mb-3 border-b border-zinc-900 pb-2.5">
         <div className="flex items-center gap-2">
           <span className="w-1.5 h-1.5 rounded-full bg-[#00ff33] animate-pulse" />
-          <h4 className="text-zinc-400 text-[10px] font-mono tracking-[0.2em] uppercase font-bold">
+          <h4 className="text-zinc-300 text-xs font-circuit tracking-[0.15em] uppercase font-bold">
             SYSTEM ARCHITECTURE // SPEC INSPECTOR
           </h4>
         </div>
@@ -89,7 +89,7 @@ export default function ArchitecturePipelineInspector() {
           type="button"
           data-no-cursor-scale="true"
           onClick={() => setIsOpen(!isOpen)}
-          className="text-zinc-500 hover:text-[#00ff33] font-mono text-[9px] uppercase tracking-wider transition-colors cursor-pointer"
+          className="text-zinc-400 hover:text-[#00ff33] font-circuit text-xs uppercase tracking-wider transition-colors cursor-pointer"
         >
           {isOpen ? '[ HIDE SPECS ]' : '[ VIEW SPECS ]'}
         </button>
@@ -108,7 +108,7 @@ export default function ArchitecturePipelineInspector() {
                   setActiveStage(stage);
                   setIsOpen(true);
                 }}
-                className={`px-3 py-1 font-mono text-[10px] uppercase tracking-widest font-bold transition-all duration-200 cursor-pointer flex items-center gap-1.5 border ${
+                className={`px-3 py-1 font-circuit text-xs uppercase tracking-wider font-bold transition-all duration-200 cursor-pointer flex items-center gap-1.5 border ${
                   isSelected
                     ? 'bg-[#00ff33] text-black border-[#00ff33] shadow-[0_0_10px_rgba(0,255,51,0.5)]'
                     : 'bg-black/60 text-zinc-400 border-zinc-800 hover:text-white hover:border-zinc-700'
@@ -119,7 +119,7 @@ export default function ArchitecturePipelineInspector() {
               </button>
 
               {idx < arr.length - 1 && (
-                <span className="text-[#00ff33] font-mono text-xs select-none">
+                <span className="text-[#00ff33] font-circuit text-xs select-none">
                   →
                 </span>
               )}
@@ -137,7 +137,7 @@ export default function ArchitecturePipelineInspector() {
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -6 }}
             transition={{ duration: 0.2 }}
-            className="pt-2 border-t border-zinc-900 font-mono text-[10px]"
+            className="pt-2 border-t border-zinc-900 font-circuit text-xs"
           >
             {/* Spec Title & Badge */}
             <div className="flex flex-wrap items-center justify-between gap-1 mb-2">

@@ -36,7 +36,7 @@ export default function ContactForm() {
   return (
     <form onSubmit={handleSubmit} className="w-full flex flex-col gap-3 sm:gap-4 bg-zinc-900/10 border border-[#00ff33] p-4 sm:p-6 backdrop-blur-sm z-20 relative">
       <div className="flex flex-col gap-1.5 sm:gap-2">
-        <label htmlFor="name" className="text-[#00ff33] font-mono text-[10px] tracking-widest uppercase select-none cursor-none!">
+        <label htmlFor="name" className="text-[#00ff33] font-circuit text-xs tracking-widest uppercase font-bold select-none cursor-none!">
           Name
         </label>
         <input 
@@ -44,12 +44,12 @@ export default function ContactForm() {
           id="name" 
           name="name" 
           required 
-          className="bg-black/50 border border-[#00ff33]/30 focus:border-[#00ff33] focus:outline-none text-white px-3 sm:px-4 py-2.5 sm:py-3 font-mono text-sm transition-colors duration-300 cursor-none" 
+          className="bg-black/50 border border-[#00ff33]/30 focus:border-[#00ff33] focus:outline-none text-white px-3 sm:px-4 py-2.5 sm:py-3 font-circuit text-xs sm:text-sm tracking-wide transition-colors duration-300 cursor-none" 
         />
       </div>
       
       <div className="flex flex-col gap-1.5 sm:gap-2">
-        <label htmlFor="email" className="text-[#00ff33] font-mono text-[10px] tracking-widest uppercase select-none cursor-none!">
+        <label htmlFor="email" className="text-[#00ff33] font-circuit text-xs tracking-widest uppercase font-bold select-none cursor-none!">
           Email Address
         </label>
         <input 
@@ -57,12 +57,12 @@ export default function ContactForm() {
           id="email" 
           name="email" 
           required 
-          className="bg-black/50 border border-[#00ff33]/30 focus:border-[#00ff33] focus:outline-none text-white px-3 sm:px-4 py-2.5 sm:py-3 font-mono text-sm transition-colors duration-300 cursor-none" 
+          className="bg-black/50 border border-[#00ff33]/30 focus:border-[#00ff33] focus:outline-none text-white px-3 sm:px-4 py-2.5 sm:py-3 font-circuit text-xs sm:text-sm tracking-wide transition-colors duration-300 cursor-none" 
         />
       </div>
       
       <div className="flex flex-col gap-1.5 sm:gap-2">
-        <label htmlFor="message" className="text-[#00ff33] font-mono text-[10px] tracking-widest uppercase select-none cursor-none!">
+        <label htmlFor="message" className="text-[#00ff33] font-circuit text-xs tracking-widest uppercase font-bold select-none cursor-none!">
           Message
         </label>
         <textarea 
@@ -70,7 +70,7 @@ export default function ContactForm() {
           name="message" 
           rows={3} 
           required 
-          className="bg-black/50 border border-[#00ff33]/30 focus:border-[#00ff33] focus:outline-none text-white px-3 sm:px-4 py-2.5 sm:py-3 font-mono text-sm transition-colors duration-300 resize-none cursor-none"
+          className="bg-black/50 border border-[#00ff33]/30 focus:border-[#00ff33] focus:outline-none text-white px-3 sm:px-4 py-2.5 sm:py-3 font-circuit text-xs sm:text-sm tracking-wide transition-colors duration-300 resize-none cursor-none"
         ></textarea>
       </div>
       
@@ -80,7 +80,7 @@ export default function ContactForm() {
       {/* 2. Visual Label acting as the button to bypass cursor hover effect */}
       <label 
         htmlFor="contact-submit-btn"
-        className={`mt-1 sm:mt-2 bg-transparent hover:bg-[#00ff33] active:bg-[#00ff33] text-[#00ff33] hover:text-black active:text-black border border-[#00ff33] font-mono text-xs tracking-[0.2em] uppercase py-3 sm:py-4 transition-all duration-300 w-full select-none cursor-none text-center flex items-center justify-center ${
+        className={`mt-1 sm:mt-2 bg-transparent hover:bg-[#00ff33] active:bg-[#00ff33] text-[#00ff33] hover:text-black active:text-black border border-[#00ff33] font-circuit text-xs sm:text-sm tracking-[0.2em] uppercase py-3 sm:py-3.5 transition-all duration-300 w-full select-none cursor-none text-center flex items-center justify-center font-bold ${
           status === 'loading' || status === 'success' ? 'opacity-50 pointer-events-none' : ''
         }`}
       >

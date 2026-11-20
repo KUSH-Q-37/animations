@@ -29,7 +29,7 @@ export default function GitHubAccountFilter({
 
   return (
     <div className="flex flex-wrap items-center gap-2">
-      <span className="text-[10px] font-mono tracking-[0.2em] text-zinc-500 uppercase mr-1">
+      <span className="text-xs font-circuit tracking-[0.2em] text-zinc-400 uppercase font-bold mr-1">
         Filter:
       </span>
 
@@ -38,16 +38,16 @@ export default function GitHubAccountFilter({
         type="button"
         data-no-cursor-scale="true"
         onClick={() => onSelectAccount("all")}
-        className={`px-3 py-1.5 text-[11px] font-mono tracking-wider uppercase transition-all duration-200 border cursor-none pointer-events-auto ${
+        className={`px-3.5 py-1.5 text-xs font-circuit tracking-wider uppercase transition-all duration-200 border cursor-none pointer-events-auto font-bold ${
           selectedAccount === "all"
-            ? "bg-[#00ff33] text-black border-[#00ff33] font-bold shadow-[0_0_10px_rgba(0,255,51,0.4)]"
+            ? "bg-[#00ff33] text-black border-[#00ff33] shadow-[0_0_10px_rgba(0,255,51,0.4)]"
             : "bg-black/60 text-zinc-400 border-zinc-800 hover:border-[#00ff33]/50 hover:text-white"
         }`}
       >
         All Accounts
         {allAccountsTotal !== null && (
           <span
-            className={`ml-1.5 text-[9px] ${
+            className={`ml-1.5 text-[10px] ${
               selectedAccount === "all" ? "text-black/80 font-bold" : "text-zinc-500"
             }`}
           >
@@ -67,9 +67,9 @@ export default function GitHubAccountFilter({
             type="button"
             data-no-cursor-scale="true"
             onClick={() => onSelectAccount(account.username)}
-            className={`px-3 py-1.5 text-[11px] font-mono tracking-wider uppercase transition-all duration-200 border cursor-none pointer-events-auto flex items-center gap-1.5 ${
+            className={`px-3.5 py-1.5 text-xs font-circuit tracking-wider uppercase transition-all duration-200 border cursor-none pointer-events-auto flex items-center gap-1.5 font-bold ${
               isSelected
-                ? "bg-[#00ff33] text-black border-[#00ff33] font-bold shadow-[0_0_10px_rgba(0,255,51,0.4)]"
+                ? "bg-[#00ff33] text-black border-[#00ff33] shadow-[0_0_10px_rgba(0,255,51,0.4)]"
                 : "bg-black/60 text-zinc-400 border-zinc-800 hover:border-[#00ff33]/50 hover:text-white"
             }`}
           >

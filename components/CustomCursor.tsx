@@ -463,7 +463,7 @@ export default function CustomCursor({
               text-[#00ff33]
               text-[10px]
               font-bold
-              font-mono
+              font-circuit
               tracking-widest
               whitespace-nowrap
             "

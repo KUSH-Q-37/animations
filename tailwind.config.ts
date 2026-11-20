@@ -9,8 +9,12 @@ const config: Config = {
   theme: {
     extend: {
       fontFamily: {
-        sans: ["var(--font-geist-sans)", "sans-serif"],
-        mono: ["var(--font-geist-mono)", "monospace"],
+        sans: ["Aerodome", "sans-serif"],
+        mono: ["Circuit Forem", "monospace"],
+        aerodome: ["Aerodome", "sans-serif"],
+        circuit: ["Circuit Forem", "monospace"],
+        gear: ["GEAR 8", "sans-serif"],
+        pixel: ["Pixelated Elegance", "monospace"],
       },
       colors: {
         background: "var(--background)",

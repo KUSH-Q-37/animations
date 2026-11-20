@@ -65,16 +65,16 @@ export default function Timeline() {
               />
 
               <div className={`w-full pl-12 md:pl-0 md:w-[calc(50%-3rem)] ${isEven ? 'md:mr-auto md:text-right' : 'md:ml-auto md:text-left'}`}>
-                <span className="text-[#00ff33] font-mono text-xs tracking-widest block mb-2">
+                <span className="text-[#00ff33] font-gear text-xs sm:text-sm tracking-widest block mb-2 font-bold">
                   {item.year}
                 </span>
-                <h3 className="text-xl md:text-2xl font-bold text-zinc-200 uppercase tracking-tight">
+                <h3 className="font-aerodome text-lg sm:text-xl md:text-2xl font-bold text-zinc-100 uppercase tracking-tight">
                   {item.title}
                 </h3>
-                <h4 className="text-[10px] md:text-xs font-mono tracking-[0.2em] text-zinc-500 uppercase mt-2 mb-4">
+                <h4 className="font-circuit text-xs tracking-[0.2em] text-zinc-400 uppercase mt-2 mb-3 font-bold">
                   {item.subtitle}
                 </h4>
-                <p className="text-zinc-400 font-light text-sm leading-relaxed mb-4">
+                <p className="font-aerodome text-xs sm:text-sm text-zinc-300 leading-relaxed mb-4 tracking-wide">
                   {item.description}
                 </p>
                 
@@ -84,7 +84,7 @@ export default function Timeline() {
                       href={item.link}
                       target="_blank"
                       rel="noreferrer"
-                      className="inline-block text-[#00ff33] font-mono text-[10px] tracking-[0.2em] uppercase font-bold border border-[#00ff33]/50 px-4 py-1.5 hover:bg-[#00ff33] hover:text-black active:bg-[#00ff33] active:text-black transition-colors duration-300 pointer-events-auto cursor-none"
+                      className="inline-block text-[#00ff33] font-circuit text-[11px] sm:text-xs tracking-[0.2em] uppercase font-bold border border-[#00ff33]/60 px-4 py-2 hover:bg-[#00ff33] hover:text-black active:bg-[#00ff33] active:text-black transition-colors duration-300 pointer-events-auto cursor-none"
                     >
                       {item.linkLabel ?? "View Certificate"}
                     </a>

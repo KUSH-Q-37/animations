@@ -1,5 +1,46 @@
 @import "tailwindcss";
 
+@font-face {
+  font-family: "Aerodome";
+  src: url("/fonts/aerodome/AerodomeRegular-2vMGK.otf") format("opentype");
+  font-weight: 100 900;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Circuit Forem";
+  src: url("/fonts/circuit-forem/CircuitForemRegular-zr2n1.otf") format("opentype");
+  font-weight: 100 900;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "GEAR 8";
+  src: url("/fonts/gear-8/Gear8-3lDzM.ttf") format("truetype");
+  font-weight: 100 900;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Pixelated Elegance";
+  src: url("/fonts/pixelated-elegance/PixelatedEleganceRegular-ovawB.ttf") format("truetype");
+  font-weight: 100 900;
+  font-style: normal;
+  font-display: swap;
+}
+
+@theme {
+  --font-sans: "Aerodome", sans-serif;
+  --font-mono: "Circuit Forem", monospace;
+  --font-aerodome: "Aerodome", sans-serif;
+  --font-circuit: "Circuit Forem", monospace;
+  --font-gear: "GEAR 8", sans-serif;
+  --font-pixel: "Pixelated Elegance", monospace;
+}
+
 :root {
   --background: #0a0a0a;
   --foreground: #ededed;
@@ -8,6 +49,7 @@
 
 @layer base {
   body {
+    font-family: "Aerodome", sans-serif;
     background-color: var(--background);
     color: var(--foreground);
     user-select: none;
@@ -43,6 +85,25 @@
 }
 
 @layer utilities {
+  .font-aerodome {
+    font-family: "Aerodome", sans-serif !important;
+  }
+  .font-circuit {
+    font-family: "Circuit Forem", monospace !important;
+  }
+  .font-gear {
+    font-family: "GEAR 8", sans-serif !important;
+  }
+  .font-pixel {
+    font-family: "Pixelated Elegance", monospace !important;
+  }
+  .font-sans {
+    font-family: "Aerodome", sans-serif !important;
+  }
+  .font-mono {
+    font-family: "Circuit Forem", monospace !important;
+  }
+
   .custom-scrollbar::-webkit-scrollbar {
     width: 18px;
     background-color: var(--background);
@@ -57,5 +118,4 @@
     border: 2px solid var(--background);
     min-height: 20px; 
   }
-
 }

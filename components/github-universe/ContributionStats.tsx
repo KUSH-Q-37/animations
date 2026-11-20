@@ -22,9 +22,17 @@ export default function ContributionStats({
       id: "total",
       label: "Total Contributions",
       value: stats.totalContributions.toLocaleString(),
-      subtitle: isCombined
-        ? `Combined activity for ${year}`
-        : `@${accountFilter} contributions in ${year}`,
+      subtitle: isCombined ? (
+        <span>
+          Combined activity for{" "}
+          <strong className="font-gear font-bold text-zinc-300">{year}</strong>
+        </span>
+      ) : (
+        <span>
+          @{accountFilter} contributions in{" "}
+          <strong className="font-gear font-bold text-zinc-300">{year}</strong>
+        </span>
+      ),
     },
     {
       id: "active-days",
@@ -62,19 +70,19 @@ export default function ContributionStats({
 
           <div className="relative z-10 flex flex-col justify-between h-full">
             <div>
-              <span className="text-[9px] font-mono tracking-[0.2em] text-zinc-500 uppercase block mb-0.5">
+              <span className="text-[10px] sm:text-xs font-circuit tracking-[0.2em] text-zinc-400 uppercase font-bold block mb-1">
                 {item.label}
               </span>
-              <div className="text-2xl sm:text-3xl font-bold tracking-tight text-white group-hover:text-[#00ff33] transition-colors duration-300">
+              <div className="font-gear text-2xl sm:text-3xl md:text-4xl font-bold tracking-wider text-white group-hover:text-[#00ff33] transition-colors duration-300">
                 {item.value}
               </div>
             </div>
 
             <div className="mt-2.5 pt-2 border-t border-zinc-900/80 flex items-center justify-between">
-              <span className="text-[8px] sm:text-[9px] font-mono tracking-widest text-zinc-500 uppercase">
+              <span className="text-[10px] sm:text-[11px] font-circuit tracking-wider text-zinc-400 uppercase">
                 {item.subtitle}
               </span>
-              <span className="text-[#00ff33] font-mono text-[10px] opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+              <span className="text-[#00ff33] font-circuit text-xs opacity-0 group-hover:opacity-100 transition-opacity duration-300">
                 →
               </span>
             </div>

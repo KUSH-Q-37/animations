@@ -10,9 +10,6 @@ import Timeline from "@/components/Timeline";
 import SkillCloud from "@/components/SkillCloud";
 import ContactForm from "@/components/ContactForm";
 import GitHubUniverse from "@/components/github-universe/GitHubUniverse";
-import EngineeringTelemetryBar from "@/components/telemetry/EngineeringTelemetryBar";
-import ArchitecturePipelineInspector from "@/components/architecture-inspector/ArchitecturePipelineInspector";
-import CommandPaletteHUD from "@/components/command-palette/CommandPaletteHUD";
 
 
 import { useFrame } from "@react-three/fiber";
@@ -244,7 +241,7 @@ const projects: Project[] = [
     year: "2026",
     shortName: "PriceTrail",
     role: "FULL-STACK DEVELOPER",
-    tech: ["TYPESCRIPT", "NESTJS", "POSTGRESQL", "REDIS", "BullMQ", "PGVECTOR"],
+    tech: ["TYPESCRIPT", "NESTJS", "POSTGRESQL", "REDIS", "BULLMQ", "PGVECTOR"],
     description:
       "A cross-platform e-commerce price aggregator built with NestJS, PostgreSQL, and BullMQ. Designed a resilient data extraction pipeline using APIs, Cheerio, and Playwright, with automated semantic product matching powered by PostgreSQL pgvector.",
     image: "/images/pricetrail.jpg",
@@ -274,6 +271,19 @@ const projects: Project[] = [
     link: "https://github.com/KUSH-Q-37/Data-Science",
   },
 ];
+
+const renderProjectDescription = (desc: string) => {
+  const parts = desc.split(/(2022|2026|2024|2025|\d{4})/g);
+  return parts.map((part, i) =>
+    /^\d{4}$/.test(part) ? (
+      <span key={i} className="font-gear font-bold text-zinc-100">
+        {part}
+      </span>
+    ) : (
+      part
+    )
+  );
+};
 
 const fadeUpVariant: any = { // <--- Kept ': any' to skip strict type checking
   hidden: { opacity: 0, y: 40 },
@@ -346,14 +356,12 @@ export default function Home() {
   return (
     <>
       <CustomCursor isGame={isGame} isDrag={isDrag} />
-      <EngineeringTelemetryBar />
-      <CommandPaletteHUD />
 
       <motion.div
         initial={{ opacity: 0, y: -16 }}
         animate={!isLoading ? { opacity: 1, y: 0 } : { opacity: 0, y: -16 }}
         transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1], delay: 0.2 }}
-        className="fixed top-5 left-5 md:top-8 md:left-8 z-40 font-mono text-lg md:text-xl font-bold tracking-tight select-none pointer-events-none"
+        className="absolute top-6 left-6 md:top-8 md:left-8 z-40 font-circuit text-lg md:text-xl font-bold tracking-wider select-none pointer-events-none"
       >
         <span className="text-zinc-500">&lt;</span>
         <span className="text-white">KUSH</span>
@@ -368,7 +376,7 @@ export default function Home() {
             initial={{ opacity: 1, y: 0 }}
             exit={{ y: "-100%" }}
             transition={{ duration: 0.8, ease: [0.76, 0, 0.24, 1] }}
-            className="fixed inset-0 z-50 bg-[#0a0a0a] flex items-center justify-center font-mono select-none"
+            className="fixed inset-0 z-50 bg-[#0a0a0a] flex items-center justify-center font-gear select-none"
           >
             <div className="text-white text-3xl md:text-5xl font-light tracking-widest">
               {progress}%
@@ -388,28 +396,28 @@ export default function Home() {
           >
             <motion.h1
               variants={fadeUpVariant}
-              className="text-7xl sm:text-8xl md:text-9xl tracking-tighter select-none pointer-events-auto w-fit flex flex-col items-start leading-[0.9]"
+              className="font-aerodome text-4xl sm:text-5xl md:text-6xl lg:text-7xl tracking-tight select-none pointer-events-auto w-fit flex flex-col items-start leading-[1.05]"
             >
-              <div className="text-white pl-4 md:pl-0 pb-4">
+              <div className="text-white pl-4 md:pl-0">
                 <span className="select-none">Kush</span>
               </div>
 
-              <div className="inline-block bg-[#00ff33] text-black px-4 md:px-0 pt-2 pb-7.5">
+              <div className="text-[#00ff33] pl-4 md:pl-0">
                 <span className="select-none">Bhardwaj</span>
               </div>
             </motion.h1>
 
             <motion.p
               variants={fadeUpVariant}
-              className="mt-6 pl-4 md:pl-0 text-xl md:text-2xl text-zinc-400 max-w-2xl font-light pointer-events-auto"
+              className="font-aerodome mt-5 pl-4 md:pl-0 text-sm sm:text-base md:text-lg text-zinc-300 max-w-xl font-normal leading-relaxed tracking-wide pointer-events-auto"
             >
-              Full-Stack Developer & 2026 Computer Science graduate building production-grade, 
+              Full-Stack Developer &amp; <span className="font-gear font-bold text-[#00ff33]">2026</span> Computer Science graduate building production-grade, 
               high-performance digital experiences at VMHUB LLP.
             </motion.p>
 
             <motion.p
               variants={fadeUpVariant}
-              className="mt-4 pl-4 md:pl-0 text-sm md:text-base text-zinc-500 max-w-xl font-light pointer-events-auto"
+              className="font-aerodome mt-3 pl-4 md:pl-0 text-xs sm:text-sm text-zinc-400 max-w-lg font-normal leading-relaxed tracking-wide pointer-events-auto"
             >
               Working across the modern JavaScript stack — React, Next.js, TypeScript, Node.js, and NestJS — with 
               PostgreSQL, Redis, MongoDB, and Prisma on the data layer. Additional experience in Python, 
@@ -427,7 +435,7 @@ export default function Home() {
               whileInView="visible"
               viewport={{ once: true, margin: "-100px" }}
               variants={fadeUpVariant}
-              className="text-3xl md:text-5xl font-bold tracking-tight uppercase text-zinc-200"
+              className="font-aerodome text-3xl sm:text-4xl md:text-5xl font-bold tracking-tight uppercase text-zinc-100"
             >
               Featured Work
             </motion.h2>
@@ -445,12 +453,12 @@ export default function Home() {
               >
                 <div className="lg:col-span-2 pt-8 pb-8 lg:pr-6 border-b lg:border-b-0 lg:border-r border-[#00ff33] flex flex-col justify-start">
                   <div className="flex items-center gap-2 mb-1">
-                    <span className="text-zinc-400 text-[10px] font-mono tracking-widest uppercase">
+                    <span className="text-zinc-400 text-[11px] sm:text-xs font-circuit tracking-widest uppercase">
                       {project.shortName}
                     </span>
                     <span className="w-1.5 h-1.5 rounded-full border border-[#00ff33] opacity-70" />
                   </div>
-                  <span className="text-6xl md:text-7xl font-bold text-zinc-100 tracking-tighter leading-none mt-1">
+                  <span className="font-gear text-5xl md:text-6xl font-bold text-zinc-100 tracking-wider leading-none mt-1">
                     0{project.id}
                   </span>
                   
@@ -462,7 +470,7 @@ export default function Home() {
                         rel="noreferrer"
                         className="group/link flex flex-col gap-2 cursor-none w-fit"
                       >
-                        <span className="text-[#00ff33] font-mono text-sm tracking-[0.2em] uppercase font-bold drop-shadow-[0_0_8px_rgba(0,255,51,0.5)]">
+                        <span className="text-[#00ff33] font-circuit text-xs sm:text-sm tracking-[0.2em] uppercase font-bold drop-shadow-[0_0_8px_rgba(0,255,51,0.5)]">
                           Visit Site
                         </span>
                         <span className="w-8 h-[2px] bg-[#00ff33] group-hover/link:w-full group-active/link:w-full transition-all duration-300 shadow-[0_0_8px_rgba(0,255,51,0.8)]"></span>
@@ -471,7 +479,7 @@ export default function Home() {
                   )}
                 </div>
 
-                <div className="lg:col-span-6 pt-8 pb-0 lg:px-8 border-b lg:border-b-0 lg:border-r border-[#00ff33] flex items-center">
+                <div className="lg:col-span-6 pt-8 pb-8 lg:px-8 border-b lg:border-b-0 lg:border-r border-[#00ff33] flex items-center">
                   <div className="w-full aspect-video relative border border-zinc-800 bg-black overflow-hidden flex items-center justify-center group-hover:border-[#00ff33]/50 group-active:border-[#00ff33]/50 transition-colors duration-500 shadow-2xl">
                     <Image
                       src={project.image}
@@ -483,70 +491,63 @@ export default function Home() {
                   </div>
                 </div>
 
-                <div className="lg:col-span-4 pt-8 pb-0 lg:pl-8 flex flex-col justify-start relative">
-                  <div className="mb-4 mt-1">
-                    <h4 className="text-zinc-500 text-[9px] font-mono tracking-[0.2em] uppercase mb-1">
+                <div className="lg:col-span-4 pt-8 pb-8 lg:pl-8 flex flex-col justify-start relative">
+                  <div className="mb-3 mt-1">
+                    <h4 className="text-zinc-400 text-[10px] sm:text-[11px] font-circuit tracking-[0.2em] uppercase mb-1 font-bold">
                       Year
                     </h4>
-                    <p className="text-2xl font-light text-zinc-200">
+                    <p className="font-gear text-xl sm:text-2xl font-bold text-zinc-100">
                       {project.year}
                     </p>
                   </div>
-                  <div className="mb-5">
-                    <h4 className="text-zinc-500 text-[9px] font-mono tracking-[0.2em] uppercase mb-1">
+                  <div className="mb-4">
+                    <h4 className="text-zinc-400 text-[10px] sm:text-[11px] font-circuit tracking-[0.2em] uppercase mb-1 font-bold">
                       Role
                     </h4>
-                    <p className="text-lg md:text-xl font-normal tracking-wide uppercase text-zinc-200 leading-tight">
+                    <p className="font-aerodome text-base sm:text-lg font-bold tracking-wide uppercase text-zinc-100 leading-tight">
                       {project.role}
                     </p>
                   </div>
-                  <div className="mb-6">
-                    <h4 className="text-zinc-500 text-[9px] font-mono tracking-[0.2em] uppercase mb-2">
+                  <div className="mb-4">
+                    <h4 className="text-zinc-400 text-[10px] sm:text-[11px] font-circuit tracking-[0.2em] uppercase mb-2 font-bold">
                       Technologies
                     </h4>
                     <div className="flex flex-wrap gap-2">
                       {project.tech.map((techItem, i) => (
                         <span
                           key={i}
-                          className="px-2.5 py-1 text-[9px] font-mono uppercase tracking-widest text-[#00ff33] border border-[#00ff33] bg-black/40"
+                          className="px-2.5 py-1 text-[10px] sm:text-[11px] font-circuit uppercase tracking-wider text-[#00ff33] border border-[#00ff33]/70 bg-black/60 font-bold"
                         >
                           {techItem}
                         </span>
                       ))}
                     </div>
                   </div>
-                  <div className="mt-2 flex items-start gap-2 pr-4">
-                    <span className="text-[#00ff33] text-xs font-mono mt-0.5">
-                      +
+                  <div className="mt-1 flex items-start gap-2 pr-2">
+                    <span className="text-[#00ff33] text-sm leading-none mt-0.5 select-none">
+                      •
                     </span>
-                    <p className="text-[10px] md:text-xs font-mono text-zinc-400 uppercase leading-relaxed tracking-wider">
-                      {project.description}
+                    <p className="font-aerodome text-xs sm:text-sm text-zinc-300 leading-relaxed tracking-wide">
+                      {renderProjectDescription(project.description)}
                     </p>
                   </div>
 
-                  {project.id === "1" ? (
-                    <ArchitecturePipelineInspector />
-                  ) : project.pipeline ? (
-                    <div className="mt-6">
-                      <h4 className="text-zinc-500 text-[9px] font-mono tracking-[0.2em] uppercase mb-2">
-                        Pipeline
-                      </h4>
-                      <div className="flex flex-wrap items-center gap-x-1.5 gap-y-2">
-                        {project.pipeline.map((stage, i) => (
-                          <div key={stage} className="flex items-center gap-1.5">
-                            <span className="px-2.5 py-1 text-[9px] font-mono uppercase tracking-widest text-black bg-[#00ff33]">
-                              {stage}
+                  {project.pipeline && (
+                    <div className="mt-4 flex flex-wrap items-center gap-1.5">
+                      {project.pipeline.map((stage, i) => (
+                        <div key={stage} className="flex items-center gap-1.5">
+                          <span className="px-2.5 py-1 border border-[#00ff33] bg-black/80 text-[#00ff33] font-circuit text-[10px] sm:text-[11px] font-bold uppercase tracking-wider shadow-[0_0_8px_rgba(0,255,51,0.2)]">
+                            {stage}
+                          </span>
+                          {i < project.pipeline!.length - 1 && (
+                            <span className="text-[#00ff33] font-circuit text-xs font-bold select-none animate-pulse">
+                              →
                             </span>
-                            {i < project.pipeline!.length - 1 && (
-                              <span className="text-[#00ff33] text-xs font-mono">
-                                →
-                              </span>
-                            )}
-                          </div>
-                        ))}
-                      </div>
+                          )}
+                        </div>
+                      ))}
                     </div>
-                  ) : null}
+                  )}
                 </div>
               </motion.div>
             ))}
@@ -568,7 +569,7 @@ export default function Home() {
               whileInView="visible"
               viewport={{ once: true, margin: "-100px" }}
               variants={fadeUpVariant}
-              className="text-4xl md:text-5xl font-bold mb-8 tracking-tight uppercase"
+              className="font-aerodome text-4xl md:text-5xl font-bold mb-8 tracking-tight uppercase"
             >
               My Journey
             </motion.h2>
@@ -587,7 +588,7 @@ export default function Home() {
               whileInView="visible"
               viewport={{ once: true, margin: "-100px" }}
               variants={fadeUpVariant}
-              className="text-4xl md:text-5xl font-bold tracking-tight uppercase mb-10 md:mb-12"
+              className="font-aerodome text-4xl md:text-5xl font-bold tracking-tight uppercase mb-10 md:mb-12"
             >
               Credentials <span className="text-[#00ff33]">&</span> Resume
             </motion.h2>
@@ -602,10 +603,10 @@ export default function Home() {
                 className="lg:col-span-5 flex flex-col justify-between border border-zinc-800 bg-[#0a0a0a] p-6 md:p-8 hover:border-[#00ff33]/50 active:border-[#00ff33]/50 transition-colors duration-500 shadow-2xl relative h-full min-h-[350px] overflow-hidden"
               >
                 <div className="relative z-10">
-                  <h3 className="text-2xl font-bold text-white uppercase tracking-wider mb-4 select-none">
+                  <h3 className="font-aerodome text-2xl font-bold text-white uppercase tracking-wider mb-4 select-none">
                     Curriculum Vitae
                   </h3>
-                  <p className="text-zinc-400 font-light text-sm leading-relaxed select-none">
+                  <p className="font-aerodome text-zinc-400 font-light text-sm leading-relaxed select-none">
                     Access my comprehensive professional experience, technical
                     skills, and educational background. Available for direct
                     viewing or secure local extraction.
@@ -620,7 +621,7 @@ export default function Home() {
                     href={RESUME_URL}
                     target="_blank"
                     rel="noreferrer"
-                    className="flex-1 text-center py-4 border border-[#00ff33] text-[#00ff33] hover:bg-[#00ff33] hover:text-black active:bg-[#00ff33] active:text-black transition-all duration-300 font-bold tracking-[0.2em] text-[10px] uppercase cursor-none"
+                    className="flex-1 text-center py-3.5 border border-[#00ff33] text-[#00ff33] hover:bg-[#00ff33] hover:text-black active:bg-[#00ff33] active:text-black transition-all duration-300 font-circuit font-bold tracking-[0.2em] text-xs uppercase cursor-none"
                   >
                     View Resume
                   </a>
@@ -628,7 +629,7 @@ export default function Home() {
                     href={RESUME_URL}
                     target="_blank"
                     rel="noreferrer"
-                    className="flex-1 text-center py-4 bg-[#00ff33] border border-[#00ff33] text-black hover:bg-white hover:border-white active:bg-white active:border-white transition-all duration-300 font-bold tracking-[0.2em] text-[10px] uppercase cursor-none"
+                    className="flex-1 text-center py-3.5 bg-[#00ff33] border border-[#00ff33] text-black hover:bg-white hover:border-white active:bg-white active:border-white transition-all duration-300 font-circuit font-bold tracking-[0.2em] text-xs uppercase cursor-none"
                   >
                     Extract PDF
                   </a>
@@ -671,12 +672,12 @@ export default function Home() {
                 ].map((item, idx) => (
                   <div
                     key={idx}
-                    className="group relative flex flex-col items-start justify-center border-l border-[#00ff33]/30 hover:border-[#00ff33] active:border-[#00ff33] pl-6 py-1 transition-colors duration-300"
+                    className="group relative flex flex-col items-start justify-center border-l border-[#00ff33]/30 hover:border-[#00ff33] active:border-[#00ff33] pl-6 py-1.5 transition-colors duration-300"
                   >
-                    <h4 className="text-base md:text-lg font-bold text-zinc-200 group-hover:text-[#00ff33] group-active:text-[#00ff33] transition-colors">
+                    <h4 className="font-aerodome text-base sm:text-lg font-bold text-zinc-100 group-hover:text-[#00ff33] group-active:text-[#00ff33] transition-colors">
                       {item.title}
                     </h4>
-                    <p className="text-[10px] font-mono text-zinc-500 mt-1 tracking-wide leading-relaxed uppercase">
+                    <p className="font-circuit text-xs text-zinc-400 mt-1 tracking-wide leading-relaxed uppercase">
                       {item.desc}
                     </p>
                     
@@ -685,7 +686,7 @@ export default function Home() {
                         href={item.link}
                         target="_blank"
                         rel="noreferrer"
-                        className="mt-2 text-[#00ff33] font-mono text-[9px] tracking-[0.2em] uppercase font-bold border border-[#00ff33]/50 px-3 py-1 hover:bg-[#00ff33] hover:text-black active:bg-[#00ff33] active:text-black transition-colors duration-300 pointer-events-auto cursor-none"
+                        className="mt-2 text-[#00ff33] font-circuit text-[10px] sm:text-[11px] tracking-[0.2em] uppercase font-bold border border-[#00ff33]/50 px-3 py-1 hover:bg-[#00ff33] hover:text-black active:bg-[#00ff33] active:text-black transition-colors duration-300 pointer-events-auto cursor-none"
                       >
                         Visit
                       </a>
@@ -708,11 +709,11 @@ export default function Home() {
                 whileInView="visible"
                 viewport={{ once: true, margin: "-100px" }}
                 variants={fadeUpVariant}
-                className="text-4xl md:text-5xl font-bold tracking-tight uppercase mb-4"
+                className="font-aerodome text-4xl md:text-5xl font-bold tracking-tight uppercase mb-4"
               >
                 Arsenal
               </motion.h2>
-              <p className="text-zinc-500 max-w-xl font-light">
+              <p className="font-aerodome text-zinc-500 max-w-xl font-light">
                 Don't just read the stack. Break it.
               </p>
             </div>
@@ -744,7 +745,7 @@ export default function Home() {
                 variants={fadeUpVariant}
                 className="mb-1 pointer-events-auto w-fit"
               >
-                <div className="inline-block bg-[#00ff33] text-black font-extrabold text-2xl xs:text-3xl sm:text-4xl md:text-5xl lg:text-6xl tracking-tighter leading-[1] px-2 sm:px-3 py-1 uppercase select-none whitespace-nowrap">
+                <div className="font-aerodome inline-block bg-[#00ff33] text-black font-bold text-xl sm:text-2xl md:text-3xl lg:text-4xl tracking-tight leading-tight px-3 sm:px-4 py-1.5 uppercase select-none whitespace-nowrap">
                   + LET&apos;S WORK
                 </div>
               </motion.div>
@@ -756,7 +757,7 @@ export default function Home() {
                 variants={fadeUpVariant}
                 className="ml-3 sm:ml-8 md:ml-16 pointer-events-auto w-fit"
               >
-                <div className="inline-block bg-[#00ff33] text-black font-extrabold text-2xl xs:text-3xl sm:text-4xl md:text-5xl lg:text-6xl tracking-tighter leading-[1] px-2 sm:px-3 py-1 uppercase select-none whitespace-nowrap">
+                <div className="font-aerodome inline-block bg-[#00ff33] text-black font-bold text-xl sm:text-2xl md:text-3xl lg:text-4xl tracking-tight leading-tight px-3 sm:px-4 py-1.5 uppercase select-none whitespace-nowrap">
                   TOGETHER
                 </div>
               </motion.div>

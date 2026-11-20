@@ -187,12 +187,14 @@ export default function ContributionHeatmap({
       {/* Heatmap Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-6 border-b border-zinc-900 gap-4">
         <div>
-          <span className="text-[10px] font-mono tracking-[0.2em] text-[#00ff33] uppercase">
+          <span className="text-xs font-circuit tracking-[0.2em] text-[#00ff33] uppercase font-bold">
             Contribution Calendar
           </span>
           <div className="flex flex-wrap items-center gap-3 mt-1">
-            <h3 className="text-xl md:text-2xl font-bold text-white uppercase tracking-tight">
-              {accountDisplayName} · {year}
+            <h3 className="font-aerodome text-base sm:text-lg md:text-xl font-bold text-white uppercase tracking-tight flex items-center gap-2">
+              <span>{accountDisplayName}</span>
+              <span className="text-zinc-600">·</span>
+              <span className="font-gear font-bold text-[#00ff33]">{year}</span>
             </h3>
 
             {accountFilter !== "all" ? (
@@ -277,7 +279,7 @@ export default function ContributionHeatmap({
           {/* Grid columns */}
           <div className="flex-1">
             {/* Month Labels on top */}
-            <div className="relative h-6 mb-2 select-none text-[11px] font-mono font-medium text-zinc-300">
+            <div className="relative h-6 mb-2 select-none text-[11px] font-circuit font-medium text-zinc-300">
               {monthLabels.map((m, idx) => (
                 <span
                   key={idx}
@@ -332,7 +334,7 @@ export default function ContributionHeatmap({
       </div>
 
       {/* Heatmap Footer Note */}
-      <div className="mt-4 pt-3 border-t border-zinc-900/80 flex flex-col sm:flex-row items-start sm:items-center justify-between text-[10px] font-mono text-zinc-500 uppercase tracking-widest gap-2">
+      <div className="mt-4 pt-3 border-t border-zinc-900/80 flex flex-col sm:flex-row items-start sm:items-center justify-between text-[10px] font-circuit text-zinc-500 uppercase tracking-widest gap-2">
         <span>Activity includes commits, PRs, issues & code reviews</span>
         <span className="text-[#00ff33]/80">
           Source: Official GitHub GraphQL API

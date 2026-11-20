@@ -174,18 +174,18 @@ export default function GitHubUniverse() {
         >
           <div>
             <div className="flex items-center gap-2 mb-2">
-              <span className="text-[10px] font-mono tracking-[0.25em] text-[#00ff33] uppercase">
+              <span className="text-xs font-circuit tracking-[0.2em] text-[#00ff33] uppercase font-bold">
                 GitHub Universe
               </span>
               <span className="w-1.5 h-1.5 rounded-full bg-[#00ff33] shadow-[0_0_8px_rgba(0,255,51,0.8)]" />
-              <span className="text-[10px] font-mono tracking-widest text-zinc-500 uppercase">
+              <span className="text-xs font-circuit tracking-wider text-zinc-400 uppercase font-bold">
                 4 Linked Accounts
               </span>
             </div>
-            <h2 className="text-3xl md:text-5xl font-bold tracking-tight uppercase text-zinc-100">
+            <h2 className="font-aerodome text-3xl sm:text-4xl md:text-5xl font-bold tracking-tight uppercase text-zinc-100">
               Contribution Activity
             </h2>
-            <p className="mt-2 text-sm md:text-base text-zinc-400 font-light max-w-xl">
+            <p className="font-aerodome mt-2 text-xs sm:text-sm md:text-base text-zinc-300 leading-relaxed max-w-xl">
               One view of my development activity across all my GitHub accounts.
               Aggregating commits, pull requests, code reviews, and qualifying
               contributions.

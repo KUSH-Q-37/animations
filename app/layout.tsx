@@ -1,16 +1,5 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
-
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
-});
-
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
-});
 
 const SITE_URL = "https://kush-bhardwaj.vercel.app/";
 const SITE_TITLE = "Kush Bhardwaj | Portfolio";
@@ -73,9 +62,9 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased custom-scrollbar`}
+      className="h-full antialiased custom-scrollbar"
     >
-      <body className="min-h-full flex flex-col">
+      <body className="min-h-full flex flex-col font-sans">
         <script
           type="application/ld+json"
           // eslint-disable-next-line react/no-danger

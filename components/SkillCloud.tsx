@@ -94,11 +94,11 @@ const SPAWN_INTERVAL = 1400;
 
 const FIRST_SPAWN_DELAY = 700;
 
-const TARGET_SPEED = 12;
+const TARGET_SPEED = 9;
 
-const MIN_SPAWN_Z = -70;
+const MIN_SPAWN_Z = -45;
 
-const MAX_SPAWN_Z = -55;
+const MAX_SPAWN_Z = -30;
 
 /**
  * Minimum distance between targets when spawning.
@@ -133,16 +133,6 @@ const MAX_TRAVEL_TIME = 0.22;
 const CORE_LIFETIME = 0.1;
 
 const RING_LIFETIME = 0.24;
-
-/* =========================================================
-   BULLET SOUND
-   ========================================================= */
-
-const BULLET_SOUND_SRC = "/images/bullet.mp3";
-
-const BULLET_SOUND_POOL_SIZE = 4;
-
-const BULLET_SOUND_VOLUME = 1.0;
 
 /* =========================================================
    GRID SETTINGS
@@ -803,21 +793,22 @@ const Target = ({
     }
   });
 
-  const boxWidth =
-    THREE.MathUtils.clamp(
-      text.length * 0.32 + 1.1,
-      3.2,
-      8.5,
-    );
+  let fontSize: number;
+  if (text.length <= 5) {
+    fontSize = 0.78;
+  } else if (text.length <= 8) {
+    fontSize = 0.70;
+  } else if (text.length <= 11) {
+    fontSize = 0.60;
+  } else if (text.length <= 15) {
+    fontSize = 0.52;
+  } else {
+    fontSize = 0.44;
+  }
 
-  const fontSize =
-    text.length > 20
-      ? 0.32
-      : text.length > 15
-        ? 0.37
-        : text.length > 10
-          ? 0.43
-          : 0.5;
+  const estimatedTextWidth = text.length * 0.65 * fontSize;
+  const boxWidth = Math.max(estimatedTextWidth + 1.6, 4.0);
+  const boxHeight = 1.6;
 
   return (
     <mesh
@@ -851,7 +842,7 @@ const Target = ({
       <boxGeometry
         args={[
           boxWidth,
-          1.35,
+          boxHeight,
           0.14,
         ]}
       />
@@ -869,16 +860,17 @@ const Target = ({
         position={[
           0,
           0,
-          0.08,
+          0.15,
         ]}
         fontSize={fontSize}
         color="#000000"
+        fontWeight="bold"
         anchorX="center"
         anchorY="middle"
-        maxWidth={
-          boxWidth - 0.45
-        }
+        whiteSpace="nowrap"
         textAlign="center"
+        renderOrder={10}
+        depthOffset={-2}
       >
         {text}
       </Text>
@@ -1589,74 +1581,6 @@ export default function SkillCloud({
     >(null);
 
   /* =======================================================
-     BULLET SOUND
-     ======================================================= */
-
-  const bulletSoundsRef = useRef<
-    HTMLAudioElement[]
-  >([]);
-
-  const bulletSoundIndexRef =
-    useRef(0);
-
-  useEffect(() => {
-    const sounds = Array.from(
-      { length: BULLET_SOUND_POOL_SIZE },
-      () => {
-        const audio = new Audio(
-          BULLET_SOUND_SRC,
-        );
-
-        audio.preload = "auto";
-        audio.volume =
-          BULLET_SOUND_VOLUME;
-
-        return audio;
-      },
-    );
-
-    bulletSoundsRef.current = sounds;
-
-    return () => {
-      sounds.forEach((audio) => {
-        audio.pause();
-        audio.currentTime = 0;
-        audio.src = "";
-      });
-
-      bulletSoundsRef.current = [];
-    };
-  }, []);
-
-  const playBulletSound =
-    useCallback(() => {
-      const sounds =
-        bulletSoundsRef.current;
-
-      if (!sounds.length) {
-        return;
-      }
-
-      const index =
-        bulletSoundIndexRef.current %
-        sounds.length;
-
-      const audio = sounds[index];
-
-      audio.currentTime = 0;
-
-      void audio.play().catch((error) => {
-        console.warn(
-          "Bullet sound could not play:",
-          error,
-        );
-      });
-
-      bulletSoundIndexRef.current =
-        (index + 1) % sounds.length;
-    }, []);
-
-  /* =======================================================
      CLEANUP
      ======================================================= */
 
@@ -1701,8 +1625,6 @@ export default function SkillCloud({
   const handleSkillHit =
     useCallback(
       (skill: string) => {
-        playBulletSound();
-
         setHitSkills(
           (previous) => [
             ...previous,
@@ -1710,7 +1632,7 @@ export default function SkillCloud({
           ],
         );
       },
-      [playBulletSound],
+      [],
     );
 
   /* =======================================================
@@ -1834,24 +1756,13 @@ export default function SkillCloud({
           HEADER
           =================================================== */}
 
-      <div
-        className="
-          flex
-          justify-between
-          items-end
-          mb-3
-          px-1
-          text-[#ffffff]
-          text-[10px]
-          md:text-sm
-          tracking-widest
-        "
-      >
-        <div>
-          + SKILLS & TECHNOLOGIES
+      <div className="flex justify-between items-end mb-3 px-1 text-white text-xs md:text-sm font-circuit tracking-wider font-bold">
+        <div className="flex items-center gap-2">
+          <span className="w-1.5 h-1.5 rounded-full bg-[#00ff33] animate-pulse" />
+          <span>+ SKILLS &amp; TECHNOLOGIES</span>
         </div>
 
-        <div>
+        <div className="font-gear text-sm md:text-base text-[#00ff33] tracking-widest font-bold">
           SCORE: {score}
         </div>
       </div>
@@ -2006,14 +1917,16 @@ export default function SkillCloud({
                 className="
                   text-center
                   px-6
+                  font-pixel
                 "
               >
                 <div
                   className="
-                    text-xl
-                    md:text-3xl
+                    text-2xl
+                    md:text-4xl
                     font-bold
-                    tracking-[0.25em]
+                    tracking-[0.2em]
+                    text-[#00ff33]
                   "
                 >
                   GAME OVER
@@ -2022,9 +1935,9 @@ export default function SkillCloud({
                 <div
                   className="
                     mt-3
-                    text-[10px]
+                    text-xs
                     md:text-sm
-                    tracking-[0.2em]
+                    tracking-[0.15em]
                     text-white
                   "
                 >
@@ -2034,9 +1947,9 @@ export default function SkillCloud({
                 <div
                   className="
                     mt-2
-                    text-[10px]
+                    text-xs
                     md:text-sm
-                    tracking-widest
+                    tracking-wider
                     text-[#00ff33]
                   "
                 >
@@ -2083,11 +1996,13 @@ export default function SkillCloud({
         className="
           mt-4
           text-center
-          text-[10px]
+          text-xs
           md:text-sm
           uppercase
           tracking-[0.3em]
           text-[#ffffff]
+          font-circuit
+          font-bold
         "
       >
         {gameOver
@@ -2123,7 +2038,7 @@ export default function SkillCloud({
               border
               border-[#1a1a1a]
               bg-black
-              font-mono
+              font-circuit
             "
           >
             {/* =================================================

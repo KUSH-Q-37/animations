@@ -40,29 +40,29 @@ export default function ContributionTooltip({
       className="fixed pointer-events-none z-50 transform -translate-x-1/2 -translate-y-full mb-3"
       style={{ left: `${x}px`, top: `${y - 8}px` }}
     >
-      <div className="bg-[#0a0a0a] border border-[#00ff33]/60 px-3 py-2 rounded-sm shadow-[0_0_15px_rgba(0,255,51,0.25)] text-center min-w-[130px] whitespace-nowrap">
-        <div className="text-xs font-bold text-white font-mono">{countText}</div>
-        <div className="text-[10px] text-zinc-400 font-mono mt-0.5">
+      <div className="bg-[#0a0a0a] border border-[#00ff33]/60 px-3.5 py-2.5 rounded-sm shadow-[0_0_15px_rgba(0,255,51,0.25)] text-center min-w-[130px] whitespace-nowrap">
+        <div className="text-xs font-bold text-white font-circuit">{countText}</div>
+        <div className="text-[11px] text-zinc-400 font-circuit mt-0.5">
           {formatContributionDate(date)}
         </div>
 
         {hasSpecificAccounts ? (
           <div className="mt-1.5 pt-1.5 border-t border-zinc-800/80 flex flex-col gap-0.5 text-left">
-            <span className="text-[8px] font-mono tracking-widest text-zinc-500 uppercase">
+            <span className="text-[9px] font-circuit tracking-widest text-zinc-400 uppercase font-bold">
               By Account:
             </span>
             {contributingAccounts.map((acc) => (
               <div
                 key={acc.username}
-                className="flex items-center justify-between gap-3 text-[10px] font-mono"
+                className="flex items-center justify-between gap-3 text-xs font-circuit"
               >
                 <span className="text-[#00ff33] font-bold">@{acc.username}</span>
-                <span className="text-zinc-400">+{acc.count}</span>
+                <span className="text-zinc-400 font-bold">+{acc.count}</span>
               </div>
             ))}
           </div>
         ) : (
-          <div className="text-[9px] text-[#00ff33] font-mono tracking-wider uppercase mt-1">
+          <div className="text-[10px] text-[#00ff33] font-circuit tracking-wider uppercase mt-1 font-bold">
             {accountLabel}
           </div>
         )}
